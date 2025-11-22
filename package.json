@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
+    "openai": "^6.9.1",
+    "undici": "^7.16.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "axio-demo",
+  "version": "1.0.0",
+  "main": "server.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

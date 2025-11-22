@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Axio – AI Judge Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #050915;
+      --card: #0b1624;
+      --card-soft: #0f1e33;
+      --accent: #00c2a8;
+      --accent-soft: rgba(0, 194, 168, 0.12);
+      --accent-strong: #18f0cd;
+      --text-main: #f7fafc;
+      --text-muted: #a3b2c4;
+      --border-soft: #233547;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, #1b355a 0, transparent 55%),
+        radial-gradient(circle at bottom right, #10352e 0, transparent 60%),
+        var(--bg);
+      color: var(--text-main);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 920px;
+    }
+
+    .card {
+      background: linear-gradient(145deg, rgba(11, 21, 35, 0.96), rgba(6, 11, 22, 0.98));
+      border-radius: 26px;
+      border: 1px solid rgba(72, 94, 127, 0.7);
+      box-shadow:
+        0 28px 70px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(120, 145, 195, 0.05);
+      padding: 24px 22px 22px;
+      backdrop-filter: blur(18px);
+    }
+
+    @media (min-width: 820px) {
+      .card {
+        padding: 26px 30px 24px;
+      }
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #b7fff0 22%, #00c2a8 60%, #007a86 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 1px rgba(5, 14, 20, 0.6), 0 10px 26px rgba(0, 0, 0, 0.6);
+    }
+
+    .brand-gavel {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid #05131a;
+      background: rgba(4, 16, 22, 0.5);
+      transform: rotate(-18deg);
+      position: relative;
+    }
+    .brand-gavel::before {
+      content: "";
+      position: absolute;
+      width: 2px;
+      height: 18px;
+      background: #05131a;
+      border-radius: 999px;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 14px;
+      box-shadow: 0 -5px 0 0 #05131a;
+    }
+
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 650;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .brand-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(0, 194, 168, 0.5);
+      background: rgba(0, 194, 168, 0.08);
+      color: var(--accent-strong);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .hero {
+      display: grid;
+      gap: 18px;
+    }
+
+    @media (min-width: 820px) {
+      .hero {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        gap: 24px;
+      }
+    }
+
+    .hero-main h1 {
+      margin: 0 0 8px;
+      font-size: 1.7rem;
+    }
+
+    @media (min-width: 820px) {
+      .hero-main h1 {
+        font-size: 2rem;
+      }
+    }
+
+    .hero-main p {
+      margin: 0;
+      font-size: 0.96rem;
+      color: var(--text-muted);
+      max-width: 36rem;
+    }
+
+    .hero-tags {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.77rem;
+    }
+
+    .hero-tag {
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(93, 122, 160, 0.7);
+      background: rgba(7, 15, 28, 0.9);
+      color: var(--text-muted);
+    }
+
+    .cta-row {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border-radius: 999px;
+      border: none;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 650;
+      color: #031015;
+      background: radial-gradient(circle at top left, #23ffe1 0, #00c2a8 50%, #009e92 100%);
+      box-shadow:
+        0 16px 38px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(2, 18, 18, 0.85);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow:
+        0 20px 46px rgba(0, 0, 0, 0.85),
+        0 0 0 1px rgba(2, 18, 18, 0.9);
+    }
+
+    .cta-button:active {
+      transform: translateY(0);
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(2, 18, 18, 0.9);
+    }
+
+    .cta-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .hero-side {
+      background: radial-gradient(circle at top, #16243a 0, #050b17 60%);
+      border-radius: 20px;
+      border: 1px solid rgba(64, 90, 129, 0.9);
+      padding: 14px 14px 12px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+    }
+
+    .side-title {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .side-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 8px;
+      font-size: 0.86rem;
+    }
+
+    .side-list li {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 6px 0;
+    }
+
+    .side-bullet {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 194, 168, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--accent-strong);
+      background: rgba(0, 194, 168, 0.08);
+      margin-top: 1px;
+    }
+
+    .side-footnote {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px dashed rgba(86, 112, 151, 0.7);
+      padding-top: 6px;
+      margin-top: 4px;
+    }
+
+    .legal-note {
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="card">
+      <div class="top">
+        <div class="brand">
+          <div class="brand-mark">
+            <div class="brand-gavel"></div>
+          </div>
+          <div>
+            <div class="brand-title">AXIO</div>
+            <div class="brand-sub">AI Judge Demo</div>
+          </div>
+        </div>
+        <div class="pill">Internal • Beta</div>
+      </div>
+
+      <div class="hero">
+        <div class="hero-main">
+          <h1>See how an AI judge reads your side of the story.</h1>
+          <p>
+            Axio lets you describe a dispute in plain language, attach evidence, and get an
+            AI-generated, non-binding assessment of how strong your claim appears before you spend
+            time or money escalating it.
+          </p>
+
+          <div class="hero-tags">
+            <div class="hero-tag">🧾 Civil & small claims style disputes</div>
+            <div class="hero-tag">📎 Attach photos, screenshots & notes</div>
+            <div class="hero-tag">⚖️ Not legal advice — insight only</div>
+          </div>
+
+          <div class="cta-row">
+            <a href="judge.html" class="cta-button">
+              <span>Open AI Judge</span>
+              <span>➜</span>
+            </a>
+            <div class="cta-sub">
+              No signup. Your case runs locally against the OpenAI API key you configured.
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="side-title">What the AI looks at</div>
+          <ul class="side-list">
+            <li>
+              <div class="side-bullet">1</div>
+              <div><strong>Your testimony</strong> – timeline, amounts, promises, and what you’re asking for.</div>
+            </li>
+            <li>
+              <div class="side-bullet">2</div>
+              <div><strong>Uploaded evidence</strong> – images and text files (screenshots, contracts, receipts).</div>
+            </li>
+            <li>
