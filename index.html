@@ -176,9 +176,16 @@
     .cta-row {
       margin-top: 18px;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
       gap: 12px;
+    }
+
+    @media (min-width: 620px) {
+      .cta-row {
+        flex-direction: row;
+        align-items: center;
+      }
     }
 
     .cta-button {
@@ -198,6 +205,7 @@
         0 0 0 1px rgba(2, 18, 18, 0.85);
       cursor: pointer;
       transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      white-space: nowrap;
     }
 
     .cta-button:hover {
@@ -218,7 +226,90 @@
     .cta-sub {
       font-size: 0.8rem;
       color: var(--text-muted);
+      max-width: 260px;
     }
+
+    /* ---------- BETA SIGNUP BLOCK ---------- */
+    .beta-box {
+      margin-top: 30px;
+      padding: 22px;
+      background: rgba(0, 194, 168, 0.08);
+      border: 1px solid rgba(0, 194, 168, 0.35);
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      text-align: left;
+    }
+
+    .beta-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent-strong);
+      margin-bottom: 6px;
+    }
+
+    .beta-sub {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      max-width: 36rem;
+    }
+
+    .beta-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .beta-input {
+      flex: 1 1 230px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 194, 168, 0.35);
+      background: rgba(6, 15, 24, 0.9);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      min-width: 220px;
+    }
+
+    .beta-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(0, 194, 168, 0.6);
+    }
+
+    .beta-btn {
+      padding: 11px 18px;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: #01201c;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 12px 24px rgba(0, 194, 168, 0.25);
+      transition: 0.15s ease;
+    }
+
+    .beta-btn:hover {
+      transform: translateY(-2px);
+      background: var(--accent-strong);
+      box-shadow: 0 20px 40px rgba(0, 194, 168, 0.35);
+    }
+
+    .beta-btn:active {
+      transform: translateY(0);
+    }
+
+    .beta-footnote {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ---------------------------------------- */
 
     .hero-side {
       background: radial-gradient(circle at top, #16243a 0, #050b17 60%);
@@ -320,6 +411,35 @@
               No signup. Your case runs locally against the OpenAI API key you configured.
             </div>
           </div>
+
+          <!-- 🚀 HIGH VISIBILITY BETA SIGNUP -->
+          <div class="beta-box">
+            <div class="beta-title">🚀 Join the Axio Judge Private Beta</div>
+            <div class="beta-sub">
+              Be the first to try new features, help shape the direction of the product,
+              and get early access to advanced AI reasoning modes.
+            </div>
+
+            <form
+              class="beta-form"
+              action="https://formspree.io/f/mjkzrlzk"
+              method="POST"
+            >
+              <input
+                type="email"
+                name="email"
+                class="beta-input"
+                required
+                placeholder="Enter your email"
+              >
+              <button type="submit" class="beta-btn">Request Early Access</button>
+            </form>
+
+            <div class="beta-footnote">
+              No spam. Only product updates & early access invitations.
+            </div>
+          </div>
+
         </div>
 
         <div class="hero-side">
@@ -334,3 +454,21 @@
               <div><strong>Uploaded evidence</strong> – images and text files (screenshots, contracts, receipts).</div>
             </li>
             <li>
+              <div class="side-bullet">3</div>
+              <div><strong>Legal-style reasoning</strong> – how a reasonable court might view the situation, in plain language.</div>
+            </li>
+          </ul>
+          <div class="side-footnote">
+            You’ll get a strength bucket (low / medium / high), explanation, key factors, and what missing info could change the result.
+          </div>
+        </div>
+      </div>
+
+      <div class="legal-note">
+        This demo is for exploration only. It does not provide legal advice and is not a substitute
+        for speaking with a qualified attorney.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

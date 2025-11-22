@@ -453,6 +453,78 @@
       border-top: 1px dashed rgba(79, 104, 139, 0.6);
       padding-top: 6px;
     }
+
+    /* --- Beta signup block --- */
+    .beta-box {
+      margin-top: 22px;
+      padding: 18px 16px;
+      background: rgba(0, 194, 168, 0.08);
+      border-radius: 16px;
+      border: 1px solid rgba(0, 194, 168, 0.35);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4);
+    }
+
+    .beta-title {
+      font-size: 1rem;
+      font-weight: 650;
+      color: var(--accent-strong);
+      margin-bottom: 4px;
+    }
+
+    .beta-sub {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .beta-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .beta-input {
+      flex: 1 1 220px;
+      min-width: 200px;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 194, 168, 0.5);
+      background: #050d1b;
+      color: var(--text-main);
+      font-size: 0.86rem;
+      outline: none;
+    }
+
+    .beta-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(0, 194, 168, 0.6);
+    }
+
+    .beta-btn {
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #01201c;
+      font-weight: 650;
+      font-size: 0.86rem;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 10px 22px rgba(0, 194, 168, 0.25);
+      transition: 0.12s ease;
+    }
+
+    .beta-btn:hover {
+      transform: translateY(-1px);
+      background: var(--accent-strong);
+      box-shadow: 0 16px 30px rgba(0, 194, 168, 0.32);
+    }
+
+    .beta-footnote {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
@@ -548,6 +620,31 @@
               It does not replace real legal advice.
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Beta signup block at bottom -->
+      <div class="beta-box">
+        <div class="beta-title">🚀 Join the Axio Judge Private Beta</div>
+        <div class="beta-sub">
+          Get early access to new features like multi-party disputes, richer evidence analysis, and case history.
+        </div>
+        <form
+          class="beta-form"
+          action="https://formspree.io/f/mjkzrlzk"
+          method="POST"
+        >
+          <input
+            type="email"
+            name="email"
+            class="beta-input"
+            required
+            placeholder="Enter your email"
+          >
+          <button type="submit" class="beta-btn">Request Early Access</button>
+        </form>
+        <div class="beta-footnote">
+          No spam — only Axio Judge product updates and beta invitations.
         </div>
       </div>
 
