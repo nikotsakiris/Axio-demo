@@ -6,15 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
-      --bg: #050915;
-      --card: #0b1624;
-      --card-soft: #0f1e33;
-      --accent: #00c2a8;
-      --accent-soft: rgba(0, 194, 168, 0.12);
-      --accent-strong: #18f0cd;
-      --text-main: #f7fafc;
-      --text-muted: #a3b2c4;
-      --border-soft: #233547;
+      --bg: #f5f2e9;              /* warm off-white */
+      --card: #ffffff;
+      --card-soft: #f3ecdd;
+      --accent: #c9a34a;           /* gold */
+      --accent-soft: rgba(201, 163, 74, 0.12);
+      --accent-strong: #b3841b;    /* deeper gold */
+      --text-main: #2e2618;        /* dark brown/charcoal */
+      --text-muted: #7b705a;       /* muted taupe */
+      --border-soft: #e1d4bd;
     }
 
     * { box-sizing: border-box; }
@@ -28,8 +28,8 @@
       padding: 24px 16px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top left, #1b355a 0, transparent 55%),
-        radial-gradient(circle at bottom right, #10352e 0, transparent 60%),
+        radial-gradient(circle at top left, #f1e1c4 0, transparent 55%),
+        radial-gradient(circle at bottom right, #f5ecda 0, transparent 60%),
         var(--bg);
       color: var(--text-main);
     }
@@ -40,12 +40,12 @@
     }
 
     .card {
-      background: linear-gradient(145deg, rgba(11, 21, 35, 0.96), rgba(6, 11, 22, 0.98));
+      background: linear-gradient(145deg, #ffffff, #f6efe2);
       border-radius: 26px;
-      border: 1px solid rgba(72, 94, 127, 0.7);
+      border: 1px solid rgba(185, 157, 90, 0.25);
       box-shadow:
-        0 28px 70px rgba(0, 0, 0, 0.7),
-        0 0 0 1px rgba(120, 145, 195, 0.05);
+        0 22px 50px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(255, 255, 255, 0.8);
       padding: 24px 22px 22px;
       backdrop-filter: blur(18px);
     }
@@ -74,19 +74,21 @@
       width: 38px;
       height: 38px;
       border-radius: 14px;
-      background: radial-gradient(circle at 30% 20%, #ffffff, #b7fff0 22%, #00c2a8 60%, #007a86 100%);
+      background: radial-gradient(circle at 30% 20%, #ffffff, #f9e7c3 28%, #d5ae4f 65%, #9a742b 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 0 1px rgba(5, 14, 20, 0.6), 0 10px 26px rgba(0, 0, 0, 0.6);
+      box-shadow:
+        0 0 0 1px rgba(158, 131, 72, 0.45),
+        0 10px 24px rgba(0, 0, 0, 0.18);
     }
 
     .brand-gavel {
       width: 20px;
       height: 20px;
       border-radius: 4px;
-      border: 2px solid #05131a;
-      background: rgba(4, 16, 22, 0.5);
+      border: 2px solid #4a3820;
+      background: rgba(219, 187, 112, 0.5);
       transform: rotate(-18deg);
       position: relative;
     }
@@ -95,12 +97,12 @@
       position: absolute;
       width: 2px;
       height: 18px;
-      background: #05131a;
+      background: #4a3820;
       border-radius: 999px;
       left: 50%;
       transform: translateX(-50%);
       top: 14px;
-      box-shadow: 0 -5px 0 0 #05131a;
+      box-shadow: 0 -5px 0 0 #4a3820;
     }
 
     .brand-title {
@@ -108,6 +110,7 @@
       font-weight: 650;
       letter-spacing: 0.07em;
       text-transform: uppercase;
+      color: #3a3020;
     }
 
     .brand-sub {
@@ -119,8 +122,8 @@
       padding: 5px 11px;
       border-radius: 999px;
       font-size: 0.75rem;
-      border: 1px solid rgba(0, 194, 168, 0.5);
-      background: rgba(0, 194, 168, 0.08);
+      border: 1px solid rgba(201, 163, 74, 0.7);
+      background: rgba(248, 233, 188, 0.7);
       color: var(--accent-strong);
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -142,6 +145,7 @@
     .hero-main h1 {
       margin: 0 0 8px;
       font-size: 1.7rem;
+      color: #362a18;
     }
 
     @media (min-width: 820px) {
@@ -168,8 +172,8 @@
     .hero-tag {
       padding: 4px 9px;
       border-radius: 999px;
-      border: 1px solid rgba(93, 122, 160, 0.7);
-      background: rgba(7, 15, 28, 0.9);
+      border: 1px solid rgba(206, 179, 115, 0.7);
+      background: rgba(255, 252, 244, 0.85);
       color: var(--text-muted);
     }
 
@@ -198,11 +202,11 @@
       text-decoration: none;
       font-size: 0.9rem;
       font-weight: 650;
-      color: #031015;
-      background: radial-gradient(circle at top left, #23ffe1 0, #00c2a8 50%, #009e92 100%);
+      color: #3c2d15;
+      background: radial-gradient(circle at top left, #fff7da 0, #e9c76b 45%, #c79b38 100%);
       box-shadow:
-        0 16px 38px rgba(0, 0, 0, 0.75),
-        0 0 0 1px rgba(2, 18, 18, 0.85);
+        0 16px 34px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.55);
       cursor: pointer;
       transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
       white-space: nowrap;
@@ -212,15 +216,15 @@
       transform: translateY(-1px);
       filter: brightness(1.03);
       box-shadow:
-        0 20px 46px rgba(0, 0, 0, 0.85),
-        0 0 0 1px rgba(2, 18, 18, 0.9);
+        0 20px 40px rgba(0, 0, 0, 0.22),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
     }
 
     .cta-button:active {
       transform: translateY(0);
       box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.7),
-        0 0 0 1px rgba(2, 18, 18, 0.9);
+        0 12px 26px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
     }
 
     .cta-sub {
@@ -233,10 +237,10 @@
     .beta-box {
       margin-top: 30px;
       padding: 22px;
-      background: rgba(0, 194, 168, 0.08);
-      border: 1px solid rgba(0, 194, 168, 0.35);
+      background: var(--accent-soft);
+      border: 1px solid rgba(201, 163, 74, 0.6);
       border-radius: 18px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
       backdrop-filter: blur(8px);
       text-align: left;
     }
@@ -266,8 +270,8 @@
       flex: 1 1 230px;
       padding: 11px 14px;
       border-radius: 12px;
-      border: 1px solid rgba(0, 194, 168, 0.35);
-      background: rgba(6, 15, 24, 0.9);
+      border: 1px solid rgba(201, 163, 74, 0.55);
+      background: #fffdf7;
       color: var(--text-main);
       font-size: 0.9rem;
       outline: none;
@@ -276,7 +280,7 @@
 
     .beta-input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(0, 194, 168, 0.6);
+      box-shadow: 0 0 0 1px rgba(201, 163, 74, 0.7);
     }
 
     .beta-btn {
@@ -284,19 +288,19 @@
       border-radius: 12px;
       border: none;
       background: var(--accent);
-      color: #01201c;
+      color: #321f08;
       font-weight: 700;
       font-size: 0.9rem;
       cursor: pointer;
       white-space: nowrap;
-      box-shadow: 0 12px 24px rgba(0, 194, 168, 0.25);
+      box-shadow: 0 12px 24px rgba(201, 163, 74, 0.35);
       transition: 0.15s ease;
     }
 
     .beta-btn:hover {
       transform: translateY(-2px);
       background: var(--accent-strong);
-      box-shadow: 0 20px 40px rgba(0, 194, 168, 0.35);
+      box-shadow: 0 18px 32px rgba(201, 163, 74, 0.45);
     }
 
     .beta-btn:active {
@@ -312,11 +316,11 @@
     /* ---------------------------------------- */
 
     .hero-side {
-      background: radial-gradient(circle at top, #16243a 0, #050b17 60%);
+      background: radial-gradient(circle at top, #faf4e6 0, #f5ede0 55%);
       border-radius: 20px;
-      border: 1px solid rgba(64, 90, 129, 0.9);
+      border: 1px solid rgba(215, 190, 130, 0.8);
       padding: 14px 14px 12px;
-      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
     }
 
     .side-title {
@@ -345,20 +349,20 @@
       width: 18px;
       height: 18px;
       border-radius: 999px;
-      border: 1px solid rgba(0, 194, 168, 0.6);
+      border: 1px solid rgba(201, 163, 74, 0.8);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.8rem;
       color: var(--accent-strong);
-      background: rgba(0, 194, 168, 0.08);
+      background: rgba(249, 228, 181, 0.7);
       margin-top: 1px;
     }
 
     .side-footnote {
       font-size: 0.75rem;
       color: var(--text-muted);
-      border-top: 1px dashed rgba(86, 112, 151, 0.7);
+      border-top: 1px dashed rgba(201, 177, 121, 0.7);
       padding-top: 6px;
       margin-top: 4px;
     }
@@ -367,7 +371,7 @@
       margin-top: 16px;
       font-size: 0.75rem;
       color: var(--text-muted);
-      opacity: 0.9;
+      opacity: 0.95;
     }
   </style>
 </head>
@@ -390,8 +394,6 @@
       <div class="hero">
         <div class="hero-main">
           <h1>See how an AI judge reads your side of the story.</h1>
-          
-
 
           <div class="cta-row">
             <a href="judge.html" class="cta-button">
@@ -403,7 +405,32 @@
             </div>
           </div>
 
-         
+          <!-- Optional: keep or remove beta box here if you want it on landing -->
+          <!--
+          <div class="beta-box">
+            <div class="beta-title">🚀 Join the Axio Judge Private Beta</div>
+            <div class="beta-sub">
+              Get early access to new features and help us shape how AI-assisted dispute analysis should work.
+            </div>
+            <form
+              class="beta-form"
+              action="https://formspree.io/f/YOUR_FORM_ID_HERE"
+              method="POST"
+            >
+              <input
+                type="email"
+                name="email"
+                class="beta-input"
+                required
+                placeholder="Enter your email"
+              >
+              <button type="submit" class="beta-btn">Request Early Access</button>
+            </form>
+            <div class="beta-footnote">
+              No spam — only Axio Judge updates and beta invitations.
+            </div>
+          </div>
+          -->
 
         </div>
 

@@ -6,16 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
-      --bg: #050915;
-      --bg-card: #0c1624;
-      --bg-elevated: #111d30;
-      --border-soft: #24354a;
-      --accent: #00c2a8;
-      --accent-soft: rgba(0, 194, 168, 0.12);
-      --accent-strong: #18f0cd;
-      --text-main: #f7fafc;
-      --text-muted: #a3b2c4;
-      --danger: #ff6b6b;
+      --bg: #f5f2e9;              /* warm off-white */
+      --bg-card: #ffffff;
+      --bg-elevated: #faf4e6;
+      --border-soft: #e1d4bd;
+      --accent: #c9a34a;           /* gold */
+      --accent-soft: rgba(201, 163, 74, 0.12);
+      --accent-strong: #b3841b;    /* deeper gold */
+      --text-main: #2e2618;        /* dark brown/charcoal */
+      --text-muted: #7b705a;       /* muted taupe */
+      --danger: #c94646;
     }
 
     * {
@@ -31,8 +31,8 @@
       justify-content: center;
       padding: 24px 16px;
       background:
-        radial-gradient(circle at top left, #1b355a 0, transparent 55%),
-        radial-gradient(circle at bottom right, #10352e 0, transparent 60%),
+        radial-gradient(circle at top left, #f1e1c4 0, transparent 55%),
+        radial-gradient(circle at bottom right, #f5ecda 0, transparent 60%),
         var(--bg);
       color: var(--text-main);
     }
@@ -44,12 +44,12 @@
     }
 
     .app-card {
-      background: linear-gradient(145deg, rgba(12,22,36,0.96), rgba(7,13,24,0.98));
+      background: linear-gradient(145deg, #ffffff, #f7efe2);
       border-radius: 24px;
-      border: 1px solid rgba(67, 87, 120, 0.6);
+      border: 1px solid rgba(185, 157, 90, 0.35);
       box-shadow:
-        0 24px 60px rgba(0, 0, 0, 0.65),
-        0 0 0 1px rgba(140, 170, 210, 0.06);
+        0 24px 60px rgba(0, 0, 0, 0.10),
+        0 0 0 1px rgba(255, 255, 255, 0.8);
       padding: 22px 22px 20px;
       backdrop-filter: blur(16px);
     }
@@ -78,11 +78,13 @@
       width: 34px;
       height: 34px;
       border-radius: 12px;
-      background: radial-gradient(circle at 30% 20%, #ffffff, #b7fff0 22%, #00c2a8 60%, #007a86 100%);
+      background: radial-gradient(circle at 30% 20%, #ffffff, #f9e7c3 28%, #d5ae4f 65%, #9a742b 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 0 1px rgba(5, 14, 20, 0.6), 0 10px 25px rgba(0, 0, 0, 0.6);
+      box-shadow:
+        0 0 0 1px rgba(158, 131, 72, 0.45),
+        0 10px 24px rgba(0, 0, 0, 0.18);
       position: relative;
       overflow: hidden;
     }
@@ -91,8 +93,8 @@
       width: 18px;
       height: 18px;
       border-radius: 4px;
-      border: 2px solid #05131a;
-      background: rgba(4, 16, 22, 0.5);
+      border: 2px solid #4a3820;
+      background: rgba(219, 187, 112, 0.5);
       transform: rotate(-18deg);
       position: relative;
     }
@@ -101,12 +103,12 @@
       position: absolute;
       width: 2px;
       height: 18px;
-      background: #05131a;
+      background: #4a3820;
       border-radius: 999px;
       left: 50%;
       transform: translateX(-50%);
       top: 14px;
-      box-shadow: 0 -5px 0 0 #05131a;
+      box-shadow: 0 -5px 0 0 #4a3820;
     }
 
     .brand-text-main {
@@ -114,6 +116,7 @@
       letter-spacing: 0.06em;
       font-size: 0.9rem;
       text-transform: uppercase;
+      color: #3a3020;
     }
 
     .brand-text-sub {
@@ -125,8 +128,8 @@
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 0.75rem;
-      border: 1px solid rgba(0, 194, 168, 0.5);
-      background: rgba(0, 194, 168, 0.08);
+      border: 1px solid rgba(201, 163, 74, 0.7);
+      background: rgba(248, 233, 188, 0.8);
       color: var(--accent-strong);
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -141,9 +144,9 @@
 
     .disclaimer {
       font-size: 0.78rem;
-      background: rgba(37, 25, 25, 0.9);
+      background: rgba(255, 241, 225, 0.95);
       border-radius: 12px;
-      border: 1px solid rgba(225, 122, 95, 0.5);
+      border: 1px solid rgba(220, 171, 120, 0.65);
       padding: 8px 10px;
       margin-bottom: 20px;
       display: flex;
@@ -174,10 +177,11 @@
     }
 
     .panel {
-      background: radial-gradient(circle at top, #141f33 0, #09111f 55%);
+      background: radial-gradient(circle at top, #faf4e6 0, #f4eadc 60%);
       border-radius: 18px;
-      border: 1px solid rgba(61, 84, 116, 0.6);
+      border: 1px solid rgba(215, 190, 130, 0.75);
       padding: 14px 14px 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
     }
 
     @media (min-width: 880px) {
@@ -226,7 +230,7 @@
       padding: 9px 10px;
       border-radius: 10px;
       border: 1px solid var(--border-soft);
-      background: #071120;
+      background: #fffcf5;
       color: var(--text-main);
       resize: vertical;
       font-size: 0.9rem;
@@ -237,14 +241,14 @@
 
     textarea:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(0, 194, 168, 0.5), 0 0 0 10px rgba(0, 194, 168, 0.12);
-      background: #050d1b;
+      box-shadow: 0 0 0 1px rgba(201, 163, 74, 0.7), 0 0 0 8px rgba(201, 163, 74, 0.18);
+      background: #fffaf0;
     }
 
     .evidence-drop {
       border-radius: 10px;
-      border: 1px dashed rgba(94, 119, 155, 0.8);
-      background: rgba(9, 19, 34, 0.85);
+      border: 1px dashed rgba(206, 179, 115, 0.8);
+      background: rgba(252, 244, 230, 0.95);
       padding: 9px 10px;
       display: flex;
       align-items: center;
@@ -264,11 +268,11 @@
       width: 26px;
       height: 26px;
       border-radius: 9px;
-      border: 1px solid rgba(120, 142, 180, 0.8);
+      border: 1px solid rgba(200, 168, 102, 0.9);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at top, #172338 0, #07101f 60%);
+      background: radial-gradient(circle at top, #f8e7c0 0, #f1ddba 60%);
       font-size: 0.9rem;
     }
 
@@ -283,8 +287,8 @@
       justify-content: center;
       padding: 6px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(0, 194, 168, 0.6);
-      background: rgba(0, 194, 168, 0.1);
+      border: 1px solid rgba(201, 163, 74, 0.8);
+      background: rgba(248, 229, 181, 0.8);
       color: var(--accent-strong);
       font-size: 0.78rem;
       cursor: pointer;
@@ -308,8 +312,8 @@
       padding: 10px 18px;
       border-radius: 999px;
       border: none;
-      background: radial-gradient(circle at top left, #23ffe1 0, #00c2a8 50%, #009e92 100%);
-      color: #031015;
+      background: radial-gradient(circle at top left, #fff7da 0, #e9c76b 45%, #c79b38 100%);
+      color: #3c2d15;
       font-weight: 650;
       cursor: pointer;
       font-size: 0.9rem;
@@ -317,8 +321,8 @@
       align-items: center;
       gap: 8px;
       box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.65),
-        0 0 0 1px rgba(2, 18, 18, 0.8);
+        0 12px 30px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.55);
       transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
     }
 
@@ -326,28 +330,28 @@
       transform: translateY(-1px);
       filter: brightness(1.02);
       box-shadow:
-        0 16px 40px rgba(0, 0, 0, 0.8),
-        0 0 0 1px rgba(2, 18, 18, 0.9);
+        0 16px 40px rgba(0, 0, 0, 0.22),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
     }
 
     button:active:not(:disabled) {
       transform: translateY(0);
       box-shadow:
-        0 10px 26px rgba(0, 0, 0, 0.7),
-        0 0 0 1px rgba(2, 18, 18, 0.9);
+        0 10px 26px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
     }
 
     button:disabled {
       opacity: 0.65;
       cursor: default;
       box-shadow:
-        0 8px 18px rgba(0, 0, 0, 0.55),
-        0 0 0 1px rgba(2, 18, 18, 0.75);
+        0 8px 18px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(178, 140, 63, 0.65);
     }
 
     .button-spinner {
-      border: 2px solid rgba(3, 22, 22, 0.4);
-      border-top-color: rgba(3, 22, 22, 0.95);
+      border: 2px solid rgba(230, 210, 160, 0.7);
+      border-top-color: rgba(140, 102, 32, 0.95);
       width: 14px;
       height: 14px;
       border-radius: 999px;
@@ -364,8 +368,9 @@
       margin-top: 12px;
       padding: 9px 11px;
       border-radius: 10px;
-      background: rgba(72, 30, 30, 0.92);
+      background: rgba(255, 226, 226, 0.96);
       border: 1px solid var(--danger);
+      color: #7f2222;
       font-size: 0.8rem;
       display: none;
     }
@@ -380,11 +385,12 @@
     }
 
     .result-inner {
-      background: radial-gradient(circle at top, #111f34 0, #060d18 55%);
+      background: radial-gradient(circle at top, #f9f1df 0, #f3e6d3 55%);
       border-radius: 14px;
-      border: 1px solid rgba(70, 96, 135, 0.85);
+      border: 1px solid rgba(210, 184, 124, 0.9);
       padding: 14px 14px 12px;
       display: none;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
     }
 
     @media (min-width: 880px) {
@@ -417,25 +423,26 @@
     }
 
     .badge-low {
-      background: rgba(104, 44, 44, 0.9);
-      color: #ffd3d3;
-      border-color: rgba(255, 157, 157, 0.6);
+      background: rgba(228, 177, 177, 0.95);
+      color: #7a2323;
+      border-color: rgba(205, 122, 122, 0.8);
     }
     .badge-medium {
-      background: rgba(104, 81, 35, 0.92);
-      color: #ffefb2;
-      border-color: rgba(247, 226, 147, 0.7);
+      background: rgba(240, 212, 160, 0.96);
+      color: #7b5b1c;
+      border-color: rgba(213, 177, 113, 0.85);
     }
     .badge-high {
-      background: rgba(26, 82, 52, 0.93);
-      color: #bdfcd0;
-      border-color: rgba(157, 239, 185, 0.65);
+      background: rgba(203, 230, 177, 0.96);
+      color: #355b1c;
+      border-color: rgba(156, 193, 110, 0.85);
     }
 
     #explanation {
       font-size: 0.86rem;
       line-height: 1.45;
       margin-bottom: 8px;
+      color: var(--text-main);
     }
 
     #details {
@@ -450,7 +457,7 @@
 
     .footnote {
       margin-top: 8px;
-      border-top: 1px dashed rgba(79, 104, 139, 0.6);
+      border-top: 1px dashed rgba(201, 177, 121, 0.7);
       padding-top: 6px;
     }
 
@@ -458,10 +465,10 @@
     .beta-box {
       margin-top: 22px;
       padding: 18px 16px;
-      background: rgba(0, 194, 168, 0.08);
+      background: var(--accent-soft);
       border-radius: 16px;
-      border: 1px solid rgba(0, 194, 168, 0.35);
-      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(201, 163, 74, 0.6);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
     }
 
     .beta-title {
@@ -489,8 +496,8 @@
       min-width: 200px;
       padding: 9px 11px;
       border-radius: 10px;
-      border: 1px solid rgba(0, 194, 168, 0.5);
-      background: #050d1b;
+      border: 1px solid rgba(201, 163, 74, 0.7);
+      background: #fffdf7;
       color: var(--text-main);
       font-size: 0.86rem;
       outline: none;
@@ -498,7 +505,7 @@
 
     .beta-input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(0, 194, 168, 0.6);
+      box-shadow: 0 0 0 1px rgba(201, 163, 74, 0.7);
     }
 
     .beta-btn {
@@ -506,19 +513,19 @@
       border-radius: 999px;
       border: none;
       background: var(--accent);
-      color: #01201c;
+      color: #321f08;
       font-weight: 650;
       font-size: 0.86rem;
       cursor: pointer;
       white-space: nowrap;
-      box-shadow: 0 10px 22px rgba(0, 194, 168, 0.25);
+      box-shadow: 0 10px 22px rgba(201, 163, 74, 0.35);
       transition: 0.12s ease;
     }
 
     .beta-btn:hover {
       transform: translateY(-1px);
       background: var(--accent-strong);
-      box-shadow: 0 16px 30px rgba(0, 194, 168, 0.32);
+      box-shadow: 0 16px 30px rgba(201, 163, 74, 0.45);
     }
 
     .beta-footnote {
@@ -548,20 +555,12 @@
         non-binding assessment of how strong your claim looks.
       </div>
 
-      <div class="disclaimer">
-        <div class="disclaimer-icon">⚖️</div>
-        <div>
-          <strong>Important:</strong> This tool provides AI-generated informational analysis only.
-          It is <strong>not legal advice</strong>, does not create a lawyer–client relationship,
-          and should not be relied on to make legal decisions. Always consult a qualified attorney.
-        </div>
-      </div>
+      
 
       <div class="layout">
         <div class="panel">
           <div class="panel-header">
             <div class="panel-title">1. Describe your case</div>
-            <div class="panel-hint">Be concrete about dates, amounts, and what you want.</div>
           </div>
 
           <form id="judge-form">
@@ -604,7 +603,6 @@
         <div class="panel result">
           <div class="panel-header">
             <div class="panel-title">2. AI assessment</div>
-            <div class="panel-hint">Estimated strength of your claim.</div>
           </div>
 
           <div class="result-inner" id="result-box">
@@ -625,7 +623,7 @@
 
       <!-- Beta signup block at bottom -->
       <div class="beta-box">
-        <div class="beta-title">🚀 Join the Axio Judge Private Beta</div>
+        <div class="beta-title">Join the Axio Judge Private Beta</div>
         <div class="beta-sub">
           Get early access to new features like multi-party disputes, richer evidence analysis, and case history.
         </div>
@@ -643,9 +641,7 @@
           >
           <button type="submit" class="beta-btn">Request Early Access</button>
         </form>
-        <div class="beta-footnote">
-          No spam — only Axio Judge product updates and beta invitations.
-        </div>
+        
       </div>
 
     </div>
