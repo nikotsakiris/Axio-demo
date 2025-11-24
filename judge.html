@@ -509,23 +509,30 @@
     }
 
     .beta-btn {
-      padding: 9px 14px;
+      margin-top: 14px;
+      padding: 10px 18px;
       border-radius: 999px;
       border: none;
-      background: var(--accent);
-      color: #321f08;
+      background: radial-gradient(circle at top left, #fff7da 0, #e9c76b 45%, #c79b38 100%);
+      color: #3c2d15;
       font-weight: 650;
-      font-size: 0.86rem;
       cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 10px 22px rgba(201, 163, 74, 0.35);
-      transition: 0.12s ease;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.55);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
     }
 
     .beta-btn:hover {
       transform: translateY(-1px);
-      background: var(--accent-strong);
-      box-shadow: 0 16px 30px rgba(201, 163, 74, 0.45);
+      filter: brightness(1.02);
+      box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.22),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
     }
 
     .beta-footnote {
@@ -544,16 +551,12 @@
           </div>
           <div>
             <div class="brand-text-main">AXIO</div>
-            <div class="brand-text-sub">AI Judge</div>
+            <div class="brand-text-sub">AI Dispute Resolution</div>
           </div>
         </div>
         <div class="pill">Beta • Private Demo</div>
       </div>
 
-      <div class="subtitle">
-        Paste your side of the story, attach any evidence you have, and get an AI-generated,
-        non-binding assessment of how strong your claim looks.
-      </div>
 
       
 
