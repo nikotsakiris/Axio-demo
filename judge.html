@@ -699,9 +699,9 @@
         let badgeClass = 'badge';
         let label = 'Unknown';
 
-        if (bucket === 'low') { badgeClass += ' badge-low'; label = 'Low likelihood'; }
-        else if (bucket === 'medium') { badgeClass += ' badge-medium'; label = 'Medium likelihood'; }
-        else if (bucket === 'high') { badgeClass += ' badge-high'; label = 'High likelihood'; }
+        if (bucket === 'low') { badgeClass += ' badge-low'; label = 'Weak Case'; }
+        else if (bucket === 'medium') { badgeClass += ' badge-medium'; label = 'Unclear Result'; }
+        else if (bucket === 'high') { badgeClass += ' badge-high'; label = 'Strong Case'; }
 
         chanceBadge.className = badgeClass;
         chanceBadge.textContent = label;
