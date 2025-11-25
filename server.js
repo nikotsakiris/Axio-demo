@@ -160,7 +160,7 @@ RULES:
 
     // --- 3) Call OpenAI Responses API with JSON schema output ---
     console.log('--- EVIDENCE DEBUG ---');
-    console.log('Evidence summaries:', JSON.stringify(evidenceSummaries, null, 2));
+    console.log('Testimony submitted:', JSON.stringify(userPayload, null, 2));
     console.log('Image parts count:', imageContentParts.length);
     console.log('----------------------');
 
