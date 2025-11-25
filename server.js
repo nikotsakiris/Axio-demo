@@ -63,25 +63,8 @@ app.post('/api/judge', upload.array('evidence'), async (req, res) => {
     for (const file of uploadedFiles) {
       const ext = path.extname(file.originalname).toLowerCase();
 
-      // Text files: read and include content
-      if (ext === '.txt') {
-        try {
-          const content = await fs.readFile(file.path, 'utf8');
-          evidenceSummaries.push({
-            filename: file.originalname,
-            type: 'text',
-            content: content.slice(0, 2000) // keep prompt manageable
-          });
-        } catch {
-          evidenceSummaries.push({
-            filename: file.originalname,
-            type: 'text',
-            note: 'Could not read file.'
-          });
-        }
-      }
       // Image files: convert to base64 data URL and attach as input_image
-      else if (isImageExt(ext)) {
+      if (isImageExt(ext)) {
         try {
           const buffer = await fs.readFile(file.path);
           const b64 = buffer.toString('base64');
@@ -119,24 +102,43 @@ app.post('/api/judge', upload.array('evidence'), async (req, res) => {
     // --- 2) Build instructions and payload for the AI ---
 
     const systemPrompt = `
-You are an AI legal information assistant (NOT a lawyer).
-The user is describing a civil or small-claims style dispute and attaching optional evidence, including images.
+You are Axio, an AI system that performs structured, deterministic legal-style evaluations of civil and contract-related disputes. You are NOT a lawyer and do NOT give legal advice. You only evaluate the information provided.
 
-Your job:
-- Give an informal, NON-BINDING assessment of how strong the user's position appears.
-- Classify the likelihood of the user's position prevailing as one of: "low", "medium", or "high".
-- Explain your reasoning in plain language.
-- List key factors that pushed you toward that bucket.
-- List missing information that could significantly change the assessment.
-- When images are provided, incorporate what you can infer from them (e.g., physical damage, condition, screenshots of messages).
+EVALUATION PRINCIPLES:
+1. Base your conclusions ONLY on facts stated or shown.
+2. Apply a consistent decision rubric:
+   - clarity of contract or agreement
+   - proof of performance or non-performance
+   - documentation of promises
+   - reliability and completeness of evidence
+   - consistency of timeline
+   - reasonableness of claims
+3. Be conservative; avoid assumptions.
+4. Never use numeric probabilities.
+5. Classify strength: LOW, MEDIUM, HIGH.
+6. Stay neutral.
 
-IMPORTANT:
-- This is NOT legal advice.
-- You do NOT know all the facts.
-- Different jurisdictions, judges, and procedural issues can change outcomes.
-- Be explicit about uncertainty and limitations.
-- Do NOT output numeric probabilities.
-    `.trim();
+OUTPUT FORMAT:
+strength_bucket: <low | medium | high>
+
+explanation:
+- A concise, formal summary.
+
+key_factors:
+- Bullet list of facts influencing evaluation.
+
+missing_information:
+- Bullet list of missing facts that would affect outcome.
+
+image_observations:
+- Bullet list describing what provided images show.
+
+RULES:
+- Extract only factual components.
+- Note contradictions explicitly.
+- Medium when uncertain.
+- High only when well-supported.
+`.trim();
 
     const userPayload = {
       testimony,
