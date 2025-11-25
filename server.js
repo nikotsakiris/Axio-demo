@@ -138,6 +138,7 @@ RULES:
 - Note contradictions explicitly.
 - Medium when uncertain.
 - High only when well-supported.
+- Only consider attached documents as evidence, not mentions of evidence in the prompt.
 `.trim();
 
     const userPayload = {
@@ -162,7 +163,7 @@ RULES:
     console.log('Evidence summaries:', JSON.stringify(evidenceSummaries, null, 2));
     console.log('Image parts count:', imageContentParts.length);
     console.log('----------------------');
-    
+
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
       input: [

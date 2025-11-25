@@ -557,9 +557,6 @@
         <div class="pill">Beta • Private Demo</div>
       </div>
 
-
-      
-
       <div class="layout">
         <div class="panel">
           <div class="panel-header">
@@ -582,7 +579,12 @@
                 <div class="evidence-icon">📎</div>
                 <div>
                   <div>Drop files here or use the button</div>
-                  <div style="font-size: 0.74rem; opacity: 0.85;">Images and .txt files are interpreted by the AI.</div>
+                  <div style="font-size: 0.74rem; opacity: 0.85;">
+                    Images and .txt files are interpreted by the AI.
+                  </div>
+                  <div id="evidence-selected" style="font-size: 0.74rem; opacity: 0.9; margin-top: 4px;">
+                    No files selected.
+                  </div>
                 </div>
               </div>
               <div class="evidence-input-wrapper">
@@ -644,90 +646,113 @@
           >
           <button type="submit" class="beta-btn">Request Early Access</button>
         </form>
-        
       </div>
 
     </div>
   </div>
 
   <script>
-    const form = document.getElementById('judge-form');
-    const submitBtn = document.getElementById('submit-btn');
-    const errorBox = document.getElementById('error-box');
-    const resultBox = document.getElementById('result-box');
-    const chanceBadge = document.getElementById('chance-badge');
-    const explanationDiv = document.getElementById('explanation');
-    const detailsDiv = document.getElementById('details');
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('judge-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const errorBox = document.getElementById('error-box');
+      const resultBox = document.getElementById('result-box');
+      const chanceBadge = document.getElementById('chance-badge');
+      const explanationDiv = document.getElementById('explanation');
+      const detailsDiv = document.getElementById('details');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorBox.style.display = 'none';
-      resultBox.style.display = 'none';
+      // File selection UI feedback
+      const evidenceInput = document.getElementById('evidence');
+      const evidenceSelected = document.getElementById('evidence-selected');
 
-      const testimony = document.getElementById('testimony').value.trim();
-      const filesInput = document.getElementById('evidence');
+      if (evidenceInput && evidenceSelected) {
+        evidenceInput.addEventListener('change', () => {
+          const files = evidenceInput.files;
 
-      if (!testimony) {
-        errorBox.textContent = 'Please describe what happened.';
-        errorBox.style.display = 'block';
-        return;
-      }
+          if (!files || files.length === 0) {
+            evidenceSelected.textContent = 'No files selected.';
+            return;
+          }
 
-      const formData = new FormData();
-      formData.append('testimony', testimony);
-      for (const file of filesInput.files) {
-        formData.append('evidence', file);
-      }
-
-      submitBtn.disabled = true;
-      const originalLabel = submitBtn.textContent;
-      submitBtn.innerHTML = '<div class="button-spinner"></div><span>Analyzing...</span>';
-
-      try {
-        const res = await fetch('/api/judge', {
-          method: 'POST',
-          body: formData
+          if (files.length === 1) {
+            evidenceSelected.textContent = `Attached: ${files[0].name}`;
+          } else {
+            const names = Array.from(files).map(f => f.name);
+            evidenceSelected.textContent = `Attached (${files.length}): ${names.join(', ')}`;
+          }
         });
-
-        if (!res.ok) {
-          throw new Error('Server error: ' + res.status);
-        }
-
-        const data = await res.json();
-
-        const bucket = (data.chance_bucket || 'unknown').toLowerCase();
-        let badgeClass = 'badge';
-        let label = 'Unknown';
-
-        if (bucket === 'low') { badgeClass += ' badge-low'; label = 'Weak Case'; }
-        else if (bucket === 'medium') { badgeClass += ' badge-medium'; label = 'Unclear Result'; }
-        else if (bucket === 'high') { badgeClass += ' badge-high'; label = 'Strong Case'; }
-
-        chanceBadge.className = badgeClass;
-        chanceBadge.textContent = label;
-
-        explanationDiv.textContent = data.explanation || 'No explanation provided.';
-        detailsDiv.innerHTML = '';
-
-        if (Array.isArray(data.key_factors) && data.key_factors.length) {
-          const f = data.key_factors.map(x => '• ' + x).join('<br>');
-          detailsDiv.innerHTML += '<strong>Key factors considered:</strong><br>' + f + '<br><br>';
-        }
-
-        if (Array.isArray(data.missing_information) && data.missing_information.length) {
-          const m = data.missing_information.map(x => '• ' + x).join('<br>');
-          detailsDiv.innerHTML += '<strong>Information that could change this assessment:</strong><br>' + m;
-        }
-
-        resultBox.style.display = 'block';
-      } catch (err) {
-        console.error(err);
-        errorBox.textContent = 'Something went wrong while contacting the AI. Please try again.';
-        errorBox.style.display = 'block';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalLabel;
       }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorBox.style.display = 'none';
+        resultBox.style.display = 'none';
+
+        const testimony = document.getElementById('testimony').value.trim();
+        const filesInput = document.getElementById('evidence');
+
+        if (!testimony) {
+          errorBox.textContent = 'Please describe what happened.';
+          errorBox.style.display = 'block';
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('testimony', testimony);
+        for (const file of filesInput.files) {
+          formData.append('evidence', file);
+        }
+
+        submitBtn.disabled = true;
+        const originalLabel = submitBtn.textContent;
+        submitBtn.innerHTML = '<div class="button-spinner"></div><span>Analyzing...</span>';
+
+        try {
+          const res = await fetch('/api/judge', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!res.ok) {
+            throw new Error('Server error: ' + res.status);
+          }
+
+          const data = await res.json();
+
+          const bucket = (data.chance_bucket || 'unknown').toLowerCase();
+          let badgeClass = 'badge';
+          let label = 'Unknown';
+
+          if (bucket === 'low') { badgeClass += ' badge-low'; label = 'Weak Case'; }
+          else if (bucket === 'medium') { badgeClass += ' badge-medium'; label = 'Unclear Result'; }
+          else if (bucket === 'high') { badgeClass += ' badge-high'; label = 'Strong Case'; }
+
+          chanceBadge.className = badgeClass;
+          chanceBadge.textContent = label;
+
+          explanationDiv.textContent = data.explanation || 'No explanation provided.';
+          detailsDiv.innerHTML = '';
+
+          if (Array.isArray(data.key_factors) && data.key_factors.length) {
+            const f = data.key_factors.map(x => '• ' + x).join('<br>');
+            detailsDiv.innerHTML += '<strong>Key factors considered:</strong><br>' + f + '<br><br>';
+          }
+
+          if (Array.isArray(data.missing_information) && data.missing_information.length) {
+            const m = data.missing_information.map(x => '• ' + x).join('<br>');
+            detailsDiv.innerHTML += '<strong>Information that could change this assessment:</strong><br>' + m;
+          }
+
+          resultBox.style.display = 'block';
+        } catch (err) {
+          console.error(err);
+          errorBox.textContent = 'Something went wrong while contacting the AI. Please try again.';
+          errorBox.style.display = 'block';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalLabel;
+        }
+      });
     });
   </script>
 </body>
