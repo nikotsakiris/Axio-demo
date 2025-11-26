@@ -293,7 +293,7 @@ app.post('/api/case-pdf', (req, res) => {
       .fontSize(10)
       .text(`Generated: ${new Date().toISOString()}`)
       .moveDown(0.3)
-      .text(`AI Strength Bucket: ${String(chance_bucket).toUpperCase()}`)
+      .text(`AI Strength Assessment: ${String(chance_bucket).toUpperCase()}`)
       .moveDown();
 
     // Section 1 – Party narrative
@@ -324,14 +324,6 @@ app.post('/api/case-pdf', (req, res) => {
       doc.fontSize(10).text('Key factors considered:').moveDown(0.2);
       key_factors.forEach((f) => {
         doc.text('• ' + f);
-      });
-      doc.moveDown(0.8);
-    }
-
-    if (missing_information.length) {
-      doc.fontSize(10).text('Information that could change this assessment:').moveDown(0.2);
-      missing_information.forEach((m) => {
-        doc.text('• ' + m);
       });
       doc.moveDown(0.8);
     }

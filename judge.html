@@ -572,7 +572,7 @@
 
             <label for="evidence" style="margin-top: 12px;">Evidence (optional)</label>
             <div class="input-help">
-              You can attach photos, screenshots, or text files that support your version of events.
+              You can attach photos or screenshots that support your version of events.
             </div>
             <div class="evidence-drop">
               <div class="evidence-drop-left">
@@ -580,7 +580,7 @@
                 <div>
                   <div>Drop files here or use the button</div>
                   <div style="font-size: 0.74rem; opacity: 0.85;">
-                    Images and .txt files are interpreted by the AI.
+                    Images are interpreted by the AI.
                   </div>
                   <div id="evidence-selected" style="font-size: 0.74rem; opacity: 0.9; margin-top: 4px;">
                     No files selected.
@@ -735,8 +735,8 @@
           let badgeClass = 'badge';
           let label = 'Unknown';
   
-          if (bucket === 'low') { badgeClass += ' badge-low'; label = 'Weak Case'; }
-          else if (bucket === 'medium') { badgeClass += ' badge-medium'; label = 'Unclear Result'; }
+          if (bucket === 'low') { badgeClass += ' badge-low'; label = 'Insufficient Backing'; }
+          else if (bucket === 'medium') { badgeClass += ' badge-medium'; label = 'Weak Case'; }
           else if (bucket === 'high') { badgeClass += ' badge-high'; label = 'Strong Case'; }
   
           chanceBadge.className = badgeClass;
