@@ -1,5 +1,5 @@
 // server.js
-// Backend for the AI Judge Demo, with image evidence support
+// Backend for the AI Judge Demo, with image evidence support + standardized PDF export
 
 require('dotenv').config();
 
@@ -8,9 +8,16 @@ const multer = require('multer');
 const fs = require('fs').promises;
 const path = require('path');
 const OpenAI = require('openai');
+const PDFDocument = require('pdfkit');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
+
+// Parse JSON bodies (for /api/case-pdf)
+app.use(express.json());
+
+// Serve static frontend (index.html, judge.html, etc.)
+app.use(express.static(__dirname));
 
 // Check for API key
 if (!process.env.OPENAI_API_KEY) {
@@ -22,9 +29,6 @@ if (!process.env.OPENAI_API_KEY) {
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
-
-// Serve static frontend (index.html, etc.)
-app.use(express.static(__dirname));
 
 // Simple helper: detect if extension is an image
 function isImageExt(ext) {
@@ -45,6 +49,11 @@ function mimeForExt(ext) {
   }
 }
 
+/**
+ * POST /api/judge
+ * Accepts: multipart/form-data with "testimony" (text) and "evidence" (files)
+ * Returns: structured JSON with chance_bucket, explanation, key_factors, missing_information
+ */
 app.post('/api/judge', upload.array('evidence'), async (req, res) => {
   const uploadedFiles = req.files || [];
 
@@ -56,7 +65,6 @@ app.post('/api/judge', upload.array('evidence'), async (req, res) => {
     }
 
     // --- 1) Summarize evidence and collect image content for the model ---
-
     const evidenceSummaries = [];
     const imageContentParts = []; // will hold { type: "input_image", image_url: "data:..." }
 
@@ -70,7 +78,6 @@ app.post('/api/judge', upload.array('evidence'), async (req, res) => {
           const b64 = buffer.toString('base64');
           const mime = mimeForExt(ext);
 
-          // This is the actual image input the model can see
           imageContentParts.push({
             type: "input_image",
             image_url: `data:${mime};base64,${b64}`
@@ -88,19 +95,17 @@ app.post('/api/judge', upload.array('evidence'), async (req, res) => {
             note: 'Image was provided but could not be read.'
           });
         }
-      }
-      // Everything else: just mention it as binary evidence (not really parsed)
-      else {
+      } else {
+        // Non-image files: just mention them as binary evidence
         evidenceSummaries.push({
           filename: file.originalname,
           type: 'binary',
-          note: 'Non-text, non-image evidence (e.g., PDF or other file type).'
+          note: 'Non-image evidence (e.g., PDF or other file type).'
         });
       }
     }
 
     // --- 2) Build instructions and payload for the AI ---
-
     const systemPrompt = `
 You are Axio, an AI system that performs structured, deterministic legal-style evaluations of civil and contract-related disputes. You are NOT a lawyer and do NOT give legal advice. You only evaluate the information provided.
 
@@ -235,14 +240,137 @@ RULES:
     res.status(500).json({ error: "Internal server error." });
   } finally {
     // Clean up uploaded files
+    const uploadedFiles = req.files || [];
     for (const file of uploadedFiles) {
       fs.unlink(file.path).catch(() => {});
     }
   }
 });
 
+/**
+ * POST /api/case-pdf
+ * Accepts JSON:
+ * {
+ *   testimony: string,
+ *   chance_bucket: "low" | "medium" | "high",
+ *   explanation: string,
+ *   key_factors: string[],
+ *   missing_information: string[],
+ *   evidence_files: string[]
+ * }
+ * Returns: application/pdf stream
+ */
+app.post('/api/case-pdf', (req, res) => {
+  try {
+    const {
+      testimony,
+      chance_bucket,
+      explanation,
+      key_factors = [],
+      missing_information = [],
+      evidence_files = []
+    } = req.body || {};
+
+    if (!testimony || !chance_bucket || !explanation) {
+      return res.status(400).json({ error: 'Missing required case data.' });
+    }
+
+    const doc = new PDFDocument({ margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="axio_case_summary.pdf"');
+
+    doc.pipe(res);
+
+    // Title
+    doc
+      .fontSize(18)
+      .text('Axio – Standardized Party Case Summary', { align: 'center' })
+      .moveDown(0.5);
+
+    // Meta
+    doc
+      .fontSize(10)
+      .text(`Generated: ${new Date().toISOString()}`)
+      .moveDown(0.3)
+      .text(`AI Strength Bucket: ${String(chance_bucket).toUpperCase()}`)
+      .moveDown();
+
+    // Section 1 – Party narrative
+    doc
+      .fontSize(13)
+      .text('1. Party Narrative (as submitted)', { underline: true })
+      .moveDown(0.4);
+
+    doc
+      .fontSize(10)
+      .text(testimony, { align: 'left' })
+      .moveDown();
+
+    // Section 2 – AI assessment (informational only)
+    doc
+      .fontSize(13)
+      .text('2. AI Assessment (Informational Only)', { underline: true })
+      .moveDown(0.4);
+
+    doc
+      .fontSize(10)
+      .text('Explanation:', { continued: false })
+      .moveDown(0.2)
+      .text(explanation)
+      .moveDown(0.8);
+
+    if (key_factors.length) {
+      doc.fontSize(10).text('Key factors considered:').moveDown(0.2);
+      key_factors.forEach((f) => {
+        doc.text('• ' + f);
+      });
+      doc.moveDown(0.8);
+    }
+
+    if (missing_information.length) {
+      doc.fontSize(10).text('Information that could change this assessment:').moveDown(0.2);
+      missing_information.forEach((m) => {
+        doc.text('• ' + m);
+      });
+      doc.moveDown(0.8);
+    }
+
+    // Section 3 – Evidence filenames
+    if (evidence_files.length) {
+      doc
+        .fontSize(13)
+        .text('3. Evidence Provided (Filenames)', { underline: true })
+        .moveDown(0.4);
+
+      doc.fontSize(10);
+      evidence_files.forEach((name) => {
+        doc.text('• ' + name);
+      });
+      doc.moveDown();
+    }
+
+    // Footer / disclaimer
+    doc
+      .moveDown()
+      .fontSize(8)
+      .fillColor('#555555')
+      .text(
+        'This document summarizes one party’s narrative and an AI-generated, informational assessment. ' +
+        'It is not legal advice, does not create a lawyer–client relationship, and is not a formal legal pleading. ' +
+        'It is intended to be compared later against the other party’s standardized summary in Axio’s dispute resolution workflow.',
+        { align: 'left' }
+      );
+
+    doc.end();
+  } catch (err) {
+    console.error('Error generating PDF:', err);
+    res.status(500).json({ error: 'Failed to generate PDF.' });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`AI Judge server running at http://localhost:${PORT}`);
+  console.log(`AI Mediator server running at http://localhost:${PORT}`);
 });

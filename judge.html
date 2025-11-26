@@ -623,6 +623,13 @@
               It does not replace real legal advice.
             </div>
           </div>
+          <button
+            type="button"
+            id="download-pdf-btn"
+            style="margin-top:10px; display:none;"
+          >
+            Download case PDF
+          </button>
         </div>
       </div>
 
@@ -660,20 +667,23 @@
       const chanceBadge = document.getElementById('chance-badge');
       const explanationDiv = document.getElementById('explanation');
       const detailsDiv = document.getElementById('details');
-
+      const pdfBtn = document.getElementById('download-pdf-btn');
+  
+      let latestReportData = null;
+  
       // File selection UI feedback
       const evidenceInput = document.getElementById('evidence');
       const evidenceSelected = document.getElementById('evidence-selected');
-
+  
       if (evidenceInput && evidenceSelected) {
         evidenceInput.addEventListener('change', () => {
           const files = evidenceInput.files;
-
+  
           if (!files || files.length === 0) {
             evidenceSelected.textContent = 'No files selected.';
             return;
           }
-
+  
           if (files.length === 1) {
             evidenceSelected.textContent = `Attached: ${files[0].name}`;
           } else {
@@ -682,68 +692,85 @@
           }
         });
       }
-
+  
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         errorBox.style.display = 'none';
         resultBox.style.display = 'none';
-
+        pdfBtn.style.display = 'none';   // hide until we have a fresh report
+        latestReportData = null;
+  
         const testimony = document.getElementById('testimony').value.trim();
         const filesInput = document.getElementById('evidence');
-
+  
         if (!testimony) {
           errorBox.textContent = 'Please describe what happened.';
           errorBox.style.display = 'block';
           return;
         }
-
+  
         const formData = new FormData();
         formData.append('testimony', testimony);
         for (const file of filesInput.files) {
           formData.append('evidence', file);
         }
-
+  
         submitBtn.disabled = true;
         const originalLabel = submitBtn.textContent;
         submitBtn.innerHTML = '<div class="button-spinner"></div><span>Analyzing...</span>';
-
+  
         try {
           const res = await fetch('/api/judge', {
             method: 'POST',
             body: formData
           });
-
+  
           if (!res.ok) {
             throw new Error('Server error: ' + res.status);
           }
-
+  
           const data = await res.json();
-
+  
           const bucket = (data.chance_bucket || 'unknown').toLowerCase();
           let badgeClass = 'badge';
           let label = 'Unknown';
-
+  
           if (bucket === 'low') { badgeClass += ' badge-low'; label = 'Weak Case'; }
           else if (bucket === 'medium') { badgeClass += ' badge-medium'; label = 'Unclear Result'; }
           else if (bucket === 'high') { badgeClass += ' badge-high'; label = 'Strong Case'; }
-
+  
           chanceBadge.className = badgeClass;
           chanceBadge.textContent = label;
-
+  
           explanationDiv.textContent = data.explanation || 'No explanation provided.';
           detailsDiv.innerHTML = '';
-
+  
           if (Array.isArray(data.key_factors) && data.key_factors.length) {
             const f = data.key_factors.map(x => '• ' + x).join('<br>');
             detailsDiv.innerHTML += '<strong>Key factors considered:</strong><br>' + f + '<br><br>';
           }
-
+  
           if (Array.isArray(data.missing_information) && data.missing_information.length) {
             const m = data.missing_information.map(x => '• ' + x).join('<br>');
             detailsDiv.innerHTML += '<strong>Information that could change this assessment:</strong><br>' + m;
           }
-
+  
+          // Save data for PDF generation
+          const evidenceFiles = Array.from(filesInput.files || []).map(f => f.name);
+          latestReportData = {
+            testimony,
+            chance_bucket: data.chance_bucket || bucket,
+            explanation: data.explanation || '',
+            key_factors: Array.isArray(data.key_factors) ? data.key_factors : [],
+            missing_information: Array.isArray(data.missing_information) ? data.missing_information : [],
+            evidence_files: evidenceFiles
+          };
+  
           resultBox.style.display = 'block';
+          if (latestReportData) {
+            // SHOW the button now that we have something to export
+            pdfBtn.style.display = 'inline-flex';
+          }
         } catch (err) {
           console.error(err);
           errorBox.textContent = 'Something went wrong while contacting the AI. Please try again.';
@@ -753,7 +780,37 @@
           submitBtn.textContent = originalLabel;
         }
       });
+  
+      // PDF download click handler
+      pdfBtn.addEventListener('click', async () => {
+        if (!latestReportData) return;
+  
+        try {
+          const res = await fetch('/api/case-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(latestReportData)
+          });
+  
+          if (!res.ok) {
+            throw new Error('Failed to generate PDF');
+          }
+  
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'axio_case_summary.pdf';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error(err);
+          alert('Failed to download PDF. Please try again.');
+        }
+      });
     });
-  </script>
+  </script>  
 </body>
 </html>
