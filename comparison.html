@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Axio - AI Mediator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #f5f2e9;              /* warm off-white */
+      --bg-card: #ffffff;
+      --bg-elevated: #faf4e6;
+      --border-soft: #e1d4bd;
+      --accent: #c9a34a;           /* gold */
+      --accent-soft: rgba(201, 163, 74, 0.12);
+      --accent-strong: #b3841b;    /* deeper gold */
+      --text-main: #2e2618;        /* dark brown/charcoal */
+      --text-muted: #7b705a;       /* muted taupe */
+      --danger: #c94646;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px 16px;
+      background:
+        radial-gradient(circle at top left, #f1e1c4 0, transparent 55%),
+        radial-gradient(circle at bottom right, #f5ecda 0, transparent 60%),
+        var(--bg);
+      color: var(--text-main);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 960px;
+      margin: auto;
+    }
+
+    .app-card {
+      background: linear-gradient(145deg, #ffffff, #f7efe2);
+      border-radius: 24px;
+      border: 1px solid rgba(185, 157, 90, 0.35);
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.10),
+        0 0 0 1px rgba(255, 255, 255, 0.8);
+      padding: 22px 22px 20px;
+      backdrop-filter: blur(16px);
+    }
+
+    @media (min-width: 840px) {
+      .app-card {
+        padding: 26px 28px 24px;
+      }
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #f9e7c3 28%, #d5ae4f 65%, #9a742b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 0 0 1px rgba(158, 131, 72, 0.45),
+        0 10px 24px rgba(0, 0, 0, 0.18);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-gavel {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 2px solid #4a3820;
+      background: rgba(219, 187, 112, 0.5);
+      transform: rotate(-18deg);
+      position: relative;
+    }
+    .brand-gavel::before {
+      content: "";
+      position: absolute;
+      width: 2px;
+      height: 18px;
+      background: #4a3820;
+      border-radius: 999px;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 14px;
+      box-shadow: 0 -5px 0 0 #4a3820;
+    }
+
+    .brand-text-main {
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      color: #3a3020;
+    }
+
+    .brand-text-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(201, 163, 74, 0.7);
+      background: rgba(248, 233, 188, 0.8);
+      color: var(--accent-strong);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .disclaimer {
+      font-size: 0.78rem;
+      background: rgba(255, 241, 225, 0.95);
+      border-radius: 12px;
+      border: 1px solid rgba(220, 171, 120, 0.65);
+      padding: 8px 10px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .disclaimer-icon {
+      font-size: 0.9rem;
+      margin-top: 1px;
+      opacity: 0.9;
+    }
+
+    .disclaimer strong {
+      font-weight: 650;
+    }
+
+    .layout {
+      display: grid;
+      gap: 18px;
+    }
+
+    @media (min-width: 880px) {
+      .layout {
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 22px;
+      }
+    }
+
+    .panel {
+      background: radial-gradient(circle at top, #faf4e6 0, #f4eadc 60%);
+      border-radius: 18px;
+      border: 1px solid rgba(215, 190, 130, 0.75);
+      padding: 14px 14px 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    @media (min-width: 880px) {
+      .panel {
+        padding: 16px 16px 18px;
+      }
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .panel-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .panel-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: 550;
+      font-size: 0.86rem;
+    }
+
+    .input-help {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: #fffcf5;
+      color: var(--text-main);
+      resize: vertical;
+      font-size: 0.9rem;
+      line-height: 1.35;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(201, 163, 74, 0.7), 0 0 0 8px rgba(201, 163, 74, 0.18);
+      background: #fffaf0;
+    }
+
+    /* --- File drop styling (same vibe as evidence block) --- */
+    .evidence-drop {
+      border-radius: 10px;
+      border: 1px dashed rgba(206, 179, 115, 0.8);
+      background: rgba(252, 244, 230, 0.95);
+      padding: 9px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .evidence-drop-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .evidence-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 9px;
+      border: 1px solid rgba(200, 168, 102, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #f8e7c0 0, #f1ddba 60%);
+      font-size: 0.9rem;
+    }
+
+    .evidence-input-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .evidence-input-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(201, 163, 74, 0.8);
+      background: rgba(248, 229, 181, 0.8);
+      color: var(--accent-strong);
+      font-size: 0.78rem;
+      cursor: pointer;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .file-hidden-input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    button {
+      margin-top: 14px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: none;
+      background: radial-gradient(circle at top left, #fff7da 0, #e9c76b 45%, #c79b38 100%);
+      color: #3c2d15;
+      font-weight: 650;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.55);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+      box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.22),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: default;
+      box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(178, 140, 63, 0.65);
+    }
+
+    .button-spinner {
+      border: 2px solid rgba(230, 210, 160, 0.7);
+      border-top-color: rgba(140, 102, 32, 0.95);
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .error {
+      margin-top: 12px;
+      padding: 9px 11px;
+      border-radius: 10px;
+      background: rgba(255, 226, 226, 0.96);
+      border: 1px solid var(--danger);
+      color: #7f2222;
+      font-size: 0.8rem;
+      display: none;
+    }
+
+    .error strong {
+      font-weight: 600;
+    }
+
+    .result {
+      margin: 0;
+      padding: 10;
+    }
+
+    .result-inner {
+      background: radial-gradient(circle at top, #f9f1df 0, #f3e6d3 55%);
+      border-radius: 14px;
+      border: 1px solid rgba(210, 184, 124, 0.9);
+      padding: 14px 14px 12px;
+      display: none;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (min-width: 880px) {
+      .result-inner {
+        padding: 15px 15px 13px;
+      }
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .result-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .badge {
+      padding: 3px 10px 3px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-type {
+      background: rgba(240, 212, 160, 0.96);
+      color: #7b5b1c;
+      border-color: rgba(213, 177, 113, 0.85);
+    }
+
+    .section-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+
+    .section-body {
+      font-size: 0.86rem;
+      line-height: 1.45;
+      color: var(--text-main);
+      white-space: pre-wrap;
+    }
+
+    .small {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .footnote {
+      margin-top: 8px;
+      border-top: 1px dashed rgba(201, 177, 121, 0.7);
+      padding-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="app-card">
+      <div class="header">
+        <div class="brand">
+          <div class="brand-mark">
+            <div class="brand-gavel"></div>
+          </div>
+          <div>
+            <div class="brand-text-main">AXIO</div>
+            <div class="brand-text-sub">AI Mediator</div>
+          </div>
+        </div>
+        <div class="pill">Beta • Private Demo</div>
+      </div>
+
+      <div class="subtitle">
+        Upload both sides’ case files and let the AI propose a fair business outcome plus a negotiation plan
+        that maximizes the chances the other party is satisfied enough to say “yes”.
+      </div>
+
+      <div class="disclaimer">
+        <div class="disclaimer-icon">⚠️</div>
+        <div>
+          <strong>Not legal advice.</strong> This tool gives a business-oriented resolution suggestion and negotiation
+          strategy based on the information you provide. It does not replace your own judgment or professional counsel.
+        </div>
+      </div>
+
+      <div class="layout">
+        <!-- LEFT: INPUT -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">1. Upload both sides</div>
+          </div>
+
+          <form id="resolve-form">
+            <!-- Party A -->
+            <label for="partyA-input">Party A case file</label>
+
+            <div class="evidence-drop">
+              <div class="evidence-drop-left">
+                <div class="evidence-icon">📎</div>
+                <div>
+                  <div id="partyA-selected" style="font-size: 0.74rem; opacity: 0.9; margin-top: 4px;">
+                    No file selected.
+                  </div>
+                </div>
+              </div>
+              <div class="evidence-input-wrapper">
+                <label class="evidence-input-label">
+                  <span>+ Add Party A file</span>
+                  <input
+                    id="partyA-input"
+                    name="partyA"
+                    type="file"
+                    class="file-hidden-input"
+                    required
+                  >
+                </label>
+              </div>
+            </div>
+
+            <!-- Party B -->
+            <label for="partyB-input" style="margin-top: 12px;">Party B case file</label>
+            <div class="evidence-drop">
+              <div class="evidence-drop-left">
+                <div class="evidence-icon">📎</div>
+                <div>
+                  <div id="partyB-selected" style="font-size: 0.74rem; opacity: 0.9; margin-top: 4px;">
+                    No file selected.
+                  </div>
+                </div>
+              </div>
+              <div class="evidence-input-wrapper">
+                <label class="evidence-input-label">
+                  <span>+ Add Party B file</span>
+                  <input
+                    id="partyB-input"
+                    name="partyB"
+                    type="file"
+                    class="file-hidden-input"
+                    required
+                  >
+                </label>
+              </div>
+            </div>
+
+            <!-- Context -->
+            <label for="context" style="margin-top: 14px;">Business context & constraints (optional)</label>
+            <div class="input-help">
+              Example: “We must preserve the relationship if possible. Cash cap $50k. We can offer future discounts but not equity.”
+            </div>
+            <textarea
+              id="context"
+              name="context"
+              placeholder="Any non-negotiables, budget limits, timing constraints, or relationship goals..."
+            ></textarea>
+
+            <button type="submit" id="submit-btn">
+              <span>Generate resolution & strategy</span>
+            </button>
+
+            <div class="error" id="error-box">
+              <strong>Something went wrong.</strong> Please try again in a moment.
+            </div>
+          </form>
+        </div>
+
+        <!-- RIGHT: OUTPUT -->
+        <div class="panel result">
+          <div class="panel-header">
+            <div class="panel-title">2. AI recommendation</div>
+          </div>
+
+          <div class="result-inner" id="result-box">
+            <div class="result-header">
+              <div class="result-title">Proposed deal structure</div>
+              <div id="type-badge" class="badge badge-type">Balanced resolution</div>
+            </div>
+
+            <div class="section-label">Recommended resolution outcome</div>
+            <div id="outcome" class="section-body"></div>
+
+            <div class="section-label">Negotiation strategy (for Party A)</div>
+            <div id="strategy" class="section-body"></div>
+
+            <div class="section-label">Reasoning & tradeoffs</div>
+            <div id="reasoning" class="section-body"></div>
+
+            <div class="footnote small">
+              This is an AI-generated opinion only. It’s meant to help you think through options and
+              negotiation framing, not to replace legal or financial advice.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('resolve-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const errorBox = document.getElementById('error-box');
+      const resultBox = document.getElementById('result-box');
+      const outcomeDiv = document.getElementById('outcome');
+      const strategyDiv = document.getElementById('strategy');
+      const reasoningDiv = document.getElementById('reasoning');
+
+      const partyAInput = document.getElementById('partyA-input');
+      const partyBInput = document.getElementById('partyB-input');
+      const partyASelected = document.getElementById('partyA-selected');
+      const partyBSelected = document.getElementById('partyB-selected');
+
+      // File selection labels
+      partyAInput.addEventListener('change', () => {
+        const file = partyAInput.files[0];
+        partyASelected.textContent = file ? `Attached: ${file.name}` : 'No file selected.';
+      });
+
+      partyBInput.addEventListener('change', () => {
+        const file = partyBInput.files[0];
+        partyBSelected.textContent = file ? `Attached: ${file.name}` : 'No file selected.';
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorBox.style.display = 'none';
+        resultBox.style.display = 'none';
+
+        const partyAFile = partyAInput.files[0];
+        const partyBFile = partyBInput.files[0];
+        const context = document.getElementById('context').value.trim();
+
+        if (!partyAFile || !partyBFile) {
+          errorBox.textContent = 'Please upload case files for both Party A and Party B.';
+          errorBox.style.display = 'block';
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('partyA', partyAFile);
+        formData.append('partyB', partyBFile);
+        formData.append('context', context);
+
+        submitBtn.disabled = true;
+        const originalLabel = submitBtn.textContent;
+        submitBtn.innerHTML = '<div class="button-spinner"></div><span>Analyzing...</span>';
+
+        try {
+          // Backend endpoint you implement to call ChatGPT and return JSON:
+          // { recommended_outcome: string, negotiation_strategy: string, reasoning: string }
+          const res = await fetch('/api/resolve', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!res.ok) {
+            throw new Error('Server error: ' + res.status);
+          }
+
+          const data = await res.json();
+
+          const outcome = data.recommended_outcome || 'No outcome generated.';
+          const strategy = data.negotiation_strategy || 'No strategy generated.';
+          const reasoning = data.reasoning || 'No reasoning provided.';
+
+          outcomeDiv.textContent = outcome;
+          strategyDiv.textContent = strategy;
+          reasoningDiv.textContent = reasoning;
+
+          resultBox.style.display = 'block';
+        } catch (err) {
+          console.error(err);
+          errorBox.textContent = 'Something went wrong while contacting the AI. Please try again.';
+          errorBox.style.display = 'block';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalLabel;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
