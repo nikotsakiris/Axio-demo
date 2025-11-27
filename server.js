@@ -9,6 +9,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const OpenAI = require('openai');
 const PDFDocument = require('pdfkit');
+const { PdfReader } = require('pdfreader');   // <-- use pdfreader
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
@@ -16,7 +17,7 @@ const upload = multer({ dest: 'uploads/' });
 // Parse JSON bodies (for /api/case-pdf)
 app.use(express.json());
 
-// Serve static frontend (index.html, judge.html, etc.)
+// Serve static frontend (index.html, judge.html, comparison.html, etc.)
 app.use(express.static(__dirname));
 
 // Check for API key
@@ -47,6 +48,27 @@ function mimeForExt(ext) {
     case '.heif': return 'image/heic';
     default: return 'image/jpeg';
   }
+}
+
+// Helper to extract text from a PDF buffer using pdfreader
+function extractPdfText(buffer) {
+  return new Promise((resolve, reject) => {
+    let text = '';
+
+    new PdfReader().parseBuffer(buffer, (err, item) => {
+      if (err) {
+        return reject(err);
+      }
+      if (!item) {
+        // end of file
+        return resolve(text);
+      }
+      if (item.text) {
+        // Simple version: just concatenate all text items with spaces
+        text += item.text + ' ';
+      }
+    });
+  });
 }
 
 /**
@@ -152,9 +174,6 @@ RULES:
       // Note: images themselves are passed separately as input_image parts
     };
 
-    // Build the `content` for the user message:
-    //  - First: a text block describing testimony + evidence
-    //  - Then: one input_image block per uploaded image (if any)
     const userContentParts = [
       {
         type: "input_text",
@@ -163,7 +182,6 @@ RULES:
       ...imageContentParts
     ];
 
-    // --- 3) Call OpenAI Responses API with JSON schema output ---
     console.log('----------------------');
     console.log('Testimony submitted:', JSON.stringify(userPayload, null, 2));
     console.log('Image parts count:', imageContentParts.length);
@@ -173,10 +191,7 @@ RULES:
       model: "gpt-4.1-mini",
       input: [
         { role: "system", content: systemPrompt },
-        {
-          role: "user",
-          content: userContentParts
-        }
+        { role: "user", content: userContentParts }
       ],
       text: {
         format: {
@@ -218,7 +233,6 @@ RULES:
       }
     });
 
-    // The structured JSON is returned as text in response.output_text
     const rawText = response.output_text;
     if (!rawText) {
       console.error("No output_text in AI response:", JSON.stringify(response, null, 2));
@@ -239,7 +253,6 @@ RULES:
     console.error("Error in /api/judge:", error);
     res.status(500).json({ error: "Internal server error." });
   } finally {
-    // Clean up uploaded files
     const uploadedFiles = req.files || [];
     for (const file of uploadedFiles) {
       fs.unlink(file.path).catch(() => {});
@@ -249,16 +262,7 @@ RULES:
 
 /**
  * POST /api/case-pdf
- * Accepts JSON:
- * {
- *   testimony: string,
- *   chance_bucket: "low" | "medium" | "high",
- *   explanation: string,
- *   key_factors: string[],
- *   missing_information: string[],
- *   evidence_files: string[]
- * }
- * Returns: application/pdf stream
+ * (unchanged)
  */
 app.post('/api/case-pdf', (req, res) => {
   try {
@@ -282,13 +286,11 @@ app.post('/api/case-pdf', (req, res) => {
 
     doc.pipe(res);
 
-    // Title
     doc
       .fontSize(18)
       .text('Axio – Standardized Party Case Summary', { align: 'center' })
       .moveDown(0.5);
 
-    // Meta
     doc
       .fontSize(10)
       .text(`Generated: ${new Date().toISOString()}`)
@@ -296,7 +298,6 @@ app.post('/api/case-pdf', (req, res) => {
       .text(`AI Strength Assessment: ${String(chance_bucket).toUpperCase()}`)
       .moveDown();
 
-    // Section 1 – Party narrative
     doc
       .fontSize(13)
       .text('1. Party Narrative (as submitted)', { underline: true })
@@ -307,7 +308,6 @@ app.post('/api/case-pdf', (req, res) => {
       .text(testimony, { align: 'left' })
       .moveDown();
 
-    // Section 2 – AI assessment (informational only)
     doc
       .fontSize(13)
       .text('2. AI Assessment (Informational Only)', { underline: true })
@@ -328,7 +328,6 @@ app.post('/api/case-pdf', (req, res) => {
       doc.moveDown(0.8);
     }
 
-    // Section 3 – Evidence filenames
     if (evidence_files.length) {
       doc
         .fontSize(13)
@@ -342,7 +341,6 @@ app.post('/api/case-pdf', (req, res) => {
       doc.moveDown();
     }
 
-    // Footer / disclaimer
     doc
       .moveDown()
       .fontSize(8)
@@ -360,6 +358,191 @@ app.post('/api/case-pdf', (req, res) => {
     res.status(500).json({ error: 'Failed to generate PDF.' });
   }
 });
+
+/**
+ * POST /api/resolve
+ * Accepts: multipart/form-data with:
+ *   - partyA (PDF file)
+ *   - partyB (PDF file)
+ *   - context (text, optional)
+ * Returns: {
+ *   recommended_outcome: string,
+ *   negotiation_strategy: string,
+ *   reasoning: string
+ * }
+ */
+app.post(
+  '/api/resolve',
+  upload.fields([
+    { name: 'partyA', maxCount: 1 },
+    { name: 'partyB', maxCount: 1 }
+  ]),
+  async (req, res) => {
+    const partyAFiles = (req.files && req.files.partyA) || [];
+    const partyBFiles = (req.files && req.files.partyB) || [];
+    const context = req.body.context || '';
+
+    try {
+      if (!partyAFiles.length || !partyBFiles.length) {
+        return res.status(400).json({
+          error: 'Both Party A and Party B PDF files are required.'
+        });
+      }
+
+      const partyABuffer = await fs.readFile(partyAFiles[0].path);
+      const partyBBuffer = await fs.readFile(partyBFiles[0].path);
+
+      // Extract text from PDFs using pdfreader
+      const partyATextRaw = await extractPdfText(partyABuffer);
+      const partyBTextRaw = await extractPdfText(partyBBuffer);
+
+      let partyAText = (partyATextRaw || '').trim();
+      let partyBText = (partyBTextRaw || '').trim();
+
+      if (!partyAText || !partyBText) {
+        return res.status(400).json({
+          error: 'One of the uploaded PDFs appears to have no extractable text.'
+        });
+      }
+
+      // Truncate to avoid huge contexts
+      const MAX_CHARS = 15000;
+      if (partyAText.length > MAX_CHARS) partyAText = partyAText.slice(0, MAX_CHARS);
+      if (partyBText.length > MAX_CHARS) partyBText = partyBText.slice(0, MAX_CHARS);
+
+      const systemPrompt = `
+You are Axio, an AI business dispute resolution consultant for commercial and B2B conflicts.
+
+You receive:
+- Party A's case (PDF text)
+- Party B's case (PDF text)
+- Optional business constraints or goals
+
+Your goals:
+1. Propose a concrete, implementable RESOLUTION OUTCOME that:
+   - Is as fair as possible given the information
+   - Minimizes future conflict
+   - Respects business constraints and practicality
+
+2. Design a NEGOTIATION STRATEGY for Party A that:
+   - Maximizes the chances Party B will accept
+   - Frames the outcome in a way that feels respectful and face-saving
+   - Emphasizes long-term relationship value where relevant
+   - Avoids legal advice and stays at the level of strategy & structure
+
+Important:
+- You are NOT a lawyer and NOT giving legal advice.
+- Be explicit about assumptions and uncertainties.
+- Write in clear business language, not legalese.
+- Never output numeric probabilities of winning in court.
+
+Respond in VALID JSON with EXACTLY the following keys:
+{
+  "recommended_outcome": "string - detailed description of the proposed resolution terms",
+  "negotiation_strategy": "string - step-by-step strategy Party A should follow when negotiating with Party B",
+  "reasoning": "string - concise explanation of tradeoffs and why this is fair / likely acceptable"
+}
+`.trim();
+
+      const userText = `
+PARTY A CASE (text extracted from PDF):
+${partyAText}
+
+PARTY B CASE (text extracted from PDF):
+${partyBText}
+
+CONTEXT / CONSTRAINTS (if any):
+${context.trim() || 'None provided.'}
+`.trim();
+
+      const response = await client.responses.create({
+        model: 'gpt-4.1-mini',
+        input: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'input_text',
+                text: userText
+              }
+            ]
+          }
+        ],
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'ResolutionRecommendation',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                recommended_outcome: {
+                  type: 'string',
+                  description: 'Detailed description of the proposed resolution terms.'
+                },
+                negotiation_strategy: {
+                  type: 'string',
+                  description: 'Step-by-step strategy Party A should follow when negotiating with Party B.'
+                },
+                reasoning: {
+                  type: 'string',
+                  description: 'Concise explanation of tradeoffs and why this outcome is fair / likely acceptable.'
+                }
+              },
+              required: ['recommended_outcome', 'negotiation_strategy', 'reasoning'],
+              additionalProperties: false
+            }
+          }
+        }
+      });
+
+      const rawText = response.output_text;
+      if (!rawText) {
+        console.error('No output_text in AI response for /api/resolve:', JSON.stringify(response, null, 2));
+        return res.status(500).json({ error: 'AI response did not contain text output.' });
+      }
+
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch (e) {
+        console.error('Failed to parse JSON from AI response (/api/resolve):', rawText);
+        result = {
+          recommended_outcome: rawText,
+          negotiation_strategy: '',
+          reasoning: ''
+        };
+      }
+
+      const {
+        recommended_outcome = '',
+        negotiation_strategy = '',
+        reasoning = ''
+      } = result;
+
+      return res.json({
+        recommended_outcome,
+        negotiation_strategy,
+        reasoning
+      });
+    } catch (error) {
+      console.error('Error in /api/resolve:', error);
+      return res.status(500).json({ error: 'Internal server error.' });
+    } finally {
+      const allFiles = [
+        ...partyAFiles,
+        ...partyBFiles
+      ];
+      for (const f of allFiles) {
+        fs.unlink(f.path).catch(() => {});
+      }
+    }
+  }
+);
 
 // Start server
 const PORT = process.env.PORT || 3000;
