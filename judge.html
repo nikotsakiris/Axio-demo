@@ -461,90 +461,13 @@
       padding-top: 6px;
     }
 
-    /* --- Beta signup block --- */
-    .beta-box {
-      margin-top: 22px;
-      padding: 18px 16px;
-      background: var(--accent-soft);
-      border-radius: 16px;
-      border: 1px solid rgba(201, 163, 74, 0.6);
-      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
-    }
-
-    .beta-title {
-      font-size: 1rem;
-      font-weight: 650;
-      color: var(--accent-strong);
-      margin-bottom: 4px;
-    }
-
-    .beta-sub {
-      font-size: 0.86rem;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-    }
-
-    .beta-form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
-    .beta-input {
-      flex: 1 1 220px;
-      min-width: 200px;
-      padding: 9px 11px;
-      border-radius: 10px;
-      border: 1px solid rgba(201, 163, 74, 0.7);
-      background: #fffdf7;
-      color: var(--text-main);
-      font-size: 0.86rem;
-      outline: none;
-    }
-
-    .beta-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(201, 163, 74, 0.7);
-    }
-
-    .beta-btn {
-      margin-top: 14px;
-      padding: 10px 18px;
-      border-radius: 999px;
-      border: none;
-      background: radial-gradient(circle at top left, #fff7da 0, #e9c76b 45%, #c79b38 100%);
-      color: #3c2d15;
-      font-weight: 650;
-      cursor: pointer;
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.18),
-        0 0 0 1px rgba(178, 140, 63, 0.55);
-      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
-    }
-
-    .beta-btn:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.02);
-      box-shadow:
-        0 16px 40px rgba(0, 0, 0, 0.22),
-        0 0 0 1px rgba(178, 140, 63, 0.8);
-    }
-
-    .beta-footnote {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
   </style>
 </head>
 <body>
   <div class="shell">
     <div class="app-card">
       <div class="header">
+        <a href="index.html" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:10px;">
         <div class="brand">
           <div class="brand-mark">
             <div class="brand-gavel"></div>
@@ -554,7 +477,10 @@
             <div class="brand-text-sub">AI Mediator</div>
           </div>
         </div>
-        <div class="pill">Beta • Private Demo</div>
+      </a>
+      <a href="index.html" class="pill" style="text-decoration:none;">
+       Beta • Private Demo
+      </a>
       </div>
 
       <div class="layout">
@@ -632,29 +558,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Beta signup block at bottom -->
-      <div class="beta-box">
-        <div class="beta-title">Join the Axio Mediator Private Beta</div>
-        <div class="beta-sub">
-          Get early access to new features like multi-party disputes, richer evidence analysis, and case history.
-        </div>
-        <form
-          class="beta-form"
-          action="https://formspree.io/f/mjkzrlzk"
-          method="POST"
-        >
-          <input
-            type="email"
-            name="email"
-            class="beta-input"
-            required
-            placeholder="Enter your email"
-          >
-          <button type="submit" class="beta-btn">Request Early Access</button>
-        </form>
-      </div>
-
     </div>
   </div>
 

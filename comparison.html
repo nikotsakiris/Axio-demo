@@ -458,6 +458,7 @@
   <div class="shell">
     <div class="app-card">
       <div class="header">
+        <a href="index.html" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:10px;">
         <div class="brand">
           <div class="brand-mark">
             <div class="brand-gavel"></div>
@@ -467,7 +468,10 @@
             <div class="brand-text-sub">AI Mediator</div>
           </div>
         </div>
-        <div class="pill">Beta • Private Demo</div>
+      </a>
+      <a href="index.html" class="pill" style="text-decoration:none;">
+       Beta • Private Demo
+      </a>
       </div>
 
       <div class="subtitle">
@@ -492,7 +496,7 @@
 
           <form id="resolve-form">
             <!-- Party A -->
-            <label for="partyA-input">Party A case file</label>
+            <label for="partyA-input">Your case file (Party A)</label>
 
             <div class="evidence-drop">
               <div class="evidence-drop-left">
@@ -518,7 +522,7 @@
             </div>
 
             <!-- Party B -->
-            <label for="partyB-input" style="margin-top: 12px;">Party B case file</label>
+            <label for="partyB-input" style="margin-top: 12px;">Their case file (Party B)</label>
             <div class="evidence-drop">
               <div class="evidence-drop-left">
                 <div class="evidence-icon">📎</div>
@@ -570,19 +574,18 @@
           </div>
 
           <div class="result-inner" id="result-box">
-            <div class="result-header">
-              <div class="result-title">Proposed deal structure</div>
-              <div id="type-badge" class="badge badge-type">Balanced resolution</div>
-            </div>
 
             <div class="section-label">Recommended resolution outcome</div>
             <div id="outcome" class="section-body"></div>
+            <br>
 
             <div class="section-label">Negotiation strategy (for Party A)</div>
             <div id="strategy" class="section-body"></div>
+            <br>
 
             <div class="section-label">Reasoning & tradeoffs</div>
             <div id="reasoning" class="section-body"></div>
+            <br>
 
             <div class="footnote small">
               This is an AI-generated opinion only. It’s meant to help you think through options and
