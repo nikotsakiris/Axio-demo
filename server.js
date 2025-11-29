@@ -92,24 +92,110 @@ io.on('connection', (socket) => {
     console.log(`Socket ${socket.id} joined room ${roomId}`);
   });
 
-  // Receive a chat message and broadcast it to the room
-  socket.on('chatMessage', ({ caseId, sender, text }) => {
+  // Receive a chat message, mediate/rephrase it, then broadcast
+  socket.on('chatMessage', async ({ caseId, sender, text }) => {
     if (!caseId || !text) return;
 
-    const payload = {
+    const originalText = text;
+    let safeText = originalText;
+
+    try {
+      const systemPrompt = `
+You are Axio, an AI mediator that rewrites messages between two parties in a dispute.
+
+Your job is to:
+- Preserve the ORIGINAL MEANING, facts, numbers, dates, and asks.
+- Remove insults, blame, and emotionally charged language.
+- Use neutral, respectful, negotiation-focused wording.
+- Prefer "I" and "we" language over "you" accusations.
+- Make requests concrete (deadlines, amounts, next steps).
+- Do NOT add legal advice or threats.
+- Do NOT change any amounts of money, dates, or core facts.
+
+Output rules:
+- Respond with a SINGLE string field "safe_text".
+- This is the version that will be shown to the other party.
+- Do NOT explain what you did; just give the rewritten message.
+`.trim();
+
+      const response = await client.responses.create({
+        model: 'gpt-4.1-mini',
+        input: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'input_text',
+                text: originalText
+              }
+            ]
+          }
+        ],
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'MediatedMessage',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                safe_text: {
+                  type: 'string',
+                  description: 'The rephrased, respectful, negotiation-friendly version of the message.'
+                }
+              },
+              required: ['safe_text'],
+              additionalProperties: false
+            }
+          }
+        }
+      });
+
+      const raw = response.output_text;
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.safe_text === 'string' && parsed.safe_text.trim().length > 0) {
+          safeText = parsed.safe_text.trim();
+        }
+      } catch (e) {
+        console.error('Failed to parse mediated message JSON:', raw);
+      }
+    } catch (err) {
+      console.error('Error mediating chat message:', err);
+      safeText = originalText; // fallback
+    }
+
+    const timestamp = new Date().toISOString();
+
+    // Payload that OTHER PARTY sees (only safe text)
+    const safePayload = {
       sender: sender || 'Anonymous',
-      text,
-      timestamp: new Date().toISOString()
+      text: safeText,
+      timestamp
     };
 
-    // Emit to everyone in that room (including sender)
-    io.to(caseId).emit('chatMessage', payload);
+    // Payload that SENDER sees (original + safe)
+    const selfPayload = {
+      sender: sender || 'Anonymous',
+      text: safeText,
+      original_text: originalText,
+      timestamp
+    };
+
+    // Others in the room: only safe wording
+    socket.to(caseId).emit('chatMessage', safePayload);
+
+    // Sender: sees both original and safe
+    socket.emit('chatMessage', selfPayload);
   });
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
   });
 });
+
 
 // ----------------------------------------------------
 //  EXISTING ENDPOINTS BELOW (unchanged)

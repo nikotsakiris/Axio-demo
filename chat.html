@@ -519,7 +519,7 @@
         chatBody.scrollTop = chatBody.scrollHeight;
       }
 
-      function appendChatMessage(msg) {
+            function appendChatMessage(msg) {
         const isMe = senderName && msg.sender === senderName;
 
         const row = document.createElement('div');
@@ -543,7 +543,20 @@
 
         const textDiv = document.createElement('div');
         textDiv.className = 'message-text';
-        textDiv.textContent = msg.text || '';
+
+        // If it's my message AND server gave us original_text,
+        // show both original and mediated version.
+        if (isMe && msg.original_text) {
+          textDiv.textContent =
+            'Original:\n' +
+            msg.original_text +
+            '\n\n' +
+            'Sent as:\n' +
+            (msg.text || '');
+        } else {
+          // Other party (or no original_text) → only safe text
+          textDiv.textContent = msg.text || '';
+        }
 
         bubble.appendChild(meta);
         bubble.appendChild(textDiv);
