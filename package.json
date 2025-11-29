@@ -8,6 +8,7 @@
     "pdf-parse": "^2.4.5",
     "pdfkit": "^0.17.2",
     "pdfreader": "^3.0.8",
+    "socket.io": "^4.8.1",
     "undici": "^7.16.0"
   },
   "scripts": {

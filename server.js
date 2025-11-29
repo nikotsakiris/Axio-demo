@@ -1,5 +1,5 @@
 // server.js
-// Backend for the AI Judge Demo, with image evidence support + standardized PDF export
+// Backend for the AI Judge Demo + Room Chat (Socket.IO), with image evidence support + standardized PDF export
 
 require('dotenv').config();
 
@@ -11,13 +11,21 @@ const OpenAI = require('openai');
 const PDFDocument = require('pdfkit');
 const { PdfReader } = require('pdfreader');   // <-- use pdfreader
 
+// --- NEW: HTTP server + Socket.IO for chat ---
+const http = require('http');
+const { Server } = require('socket.io');
+
 const app = express();
 const upload = multer({ dest: 'uploads/' });
+
+// Create HTTP server and attach Socket.IO
+const server = http.createServer(app);
+const io = new Server(server);
 
 // Parse JSON bodies (for /api/case-pdf)
 app.use(express.json());
 
-// Serve static frontend (index.html, judge.html, comparison.html, etc.)
+// Serve static frontend (index.html, rooms.html, chat.html, judge.html, etc.)
 app.use(express.static(__dirname));
 
 // Check for API key
@@ -70,6 +78,42 @@ function extractPdfText(buffer) {
     });
   });
 }
+
+// ----------------------------------------------------
+// REALTIME CHAT VIA SOCKET.IO
+// ----------------------------------------------------
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  // Join a specific "room" (case/chat room)
+  socket.on('joinRoom', (roomId) => {
+    if (!roomId) return;
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
+  });
+
+  // Receive a chat message and broadcast it to the room
+  socket.on('chatMessage', ({ caseId, sender, text }) => {
+    if (!caseId || !text) return;
+
+    const payload = {
+      sender: sender || 'Anonymous',
+      text,
+      timestamp: new Date().toISOString()
+    };
+
+    // Emit to everyone in that room (including sender)
+    io.to(caseId).emit('chatMessage', payload);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
+// ----------------------------------------------------
+//  EXISTING ENDPOINTS BELOW (unchanged)
+// ----------------------------------------------------
 
 /**
  * POST /api/judge
@@ -544,8 +588,11 @@ ${context.trim() || 'None provided.'}
   }
 );
 
-// Start server
+// ----------------------------------------------------
+// START SERVER (HTTP + Socket.IO)
+// ----------------------------------------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`AI Mediator server running at http://localhost:${PORT}`);
+
+server.listen(PORT, () => {
+  console.log(`Axio server listening on http://localhost:${PORT}`);
 });

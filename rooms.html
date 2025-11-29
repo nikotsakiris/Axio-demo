@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Axio – Rooms</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #f5f2e9;              /* warm off-white */
+      --bg-card: #ffffff;
+      --bg-elevated: #faf4e6;
+      --border-soft: #e1d4bd;
+      --accent: #c9a34a;           /* gold */
+      --accent-soft: rgba(201, 163, 74, 0.12);
+      --accent-strong: #b3841b;    /* deeper gold */
+      --text-main: #2e2618;        /* dark brown/charcoal */
+      --text-muted: #7b705a;       /* muted taupe */
+      --danger: #c94646;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px 16px;
+      background:
+        radial-gradient(circle at top left, #f1e1c4 0, transparent 55%),
+        radial-gradient(circle at bottom right, #f5ecda 0, transparent 60%),
+        var(--bg);
+      color: var(--text-main);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 960px;
+      margin: auto;
+    }
+
+    .app-card {
+      background: linear-gradient(145deg, #ffffff, #f7efe2);
+      border-radius: 24px;
+      border: 1px solid rgba(185, 157, 90, 0.35);
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.10),
+        0 0 0 1px rgba(255, 255, 255, 0.8);
+      padding: 22px 22px 20px;
+      backdrop-filter: blur(16px);
+    }
+
+    @media (min-width: 840px) {
+      .app-card {
+        padding: 26px 28px 24px;
+      }
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #f9e7c3 28%, #d5ae4f 65%, #9a742b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 0 0 1px rgba(158, 131, 72, 0.45),
+        0 10px 24px rgba(0, 0, 0, 0.18);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-gavel {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 2px solid #4a3820;
+      background: rgba(219, 187, 112, 0.5);
+      transform: rotate(-18deg);
+      position: relative;
+    }
+    .brand-gavel::before {
+      content: "";
+      position: absolute;
+      width: 2px;
+      height: 18px;
+      background: #4a3820;
+      border-radius: 999px;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 14px;
+      box-shadow: 0 -5px 0 0 #4a3820;
+    }
+
+    .brand-text-main {
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      color: #3a3020;
+    }
+
+    .brand-text-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(201, 163, 74, 0.7);
+      background: rgba(248, 233, 188, 0.8);
+      color: var(--accent-strong);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .layout {
+      display: grid;
+      gap: 18px;
+    }
+
+    @media (min-width: 880px) {
+      .layout {
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 22px;
+      }
+    }
+
+    .panel {
+      background: radial-gradient(circle at top, #faf4e6 0, #f4eadc 60%);
+      border-radius: 18px;
+      border: 1px solid rgba(215, 190, 130, 0.75);
+      padding: 16px 16px 18px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .panel-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .panel-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: 550;
+      font-size: 0.86rem;
+    }
+
+    .input-help {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: #fffcf5;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(201, 163, 74, 0.7), 0 0 0 8px rgba(201, 163, 74, 0.18);
+      background: #fffaf0;
+    }
+
+    .generated-code {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 7px 9px;
+      border-radius: 9px;
+      background: rgba(255, 248, 229, 0.8);
+      border: 1px dashed rgba(201, 163, 74, 0.7);
+    }
+
+    button {
+      margin-top: 14px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: none;
+      background: radial-gradient(circle at top left, #fff7da 0, #e9c76b 45%, #c79b38 100%);
+      color: #3c2d15;
+      font-weight: 650;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.55);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+      box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.22),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(178, 140, 63, 0.8);
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: default;
+      box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(178, 140, 63, 0.65);
+    }
+
+    .small-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="app-card">
+      <div class="header">
+        <a href="index.html" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:10px;">
+          <div class="brand">
+            <div class="brand-mark">
+              <div class="brand-gavel"></div>
+            </div>
+            <div>
+              <div class="brand-text-main">AXIO</div>
+              <div class="brand-text-sub">AI Mediator</div>
+            </div>
+          </div>
+        </a>
+        <a href="index.html" class="pill">
+          Rooms • Beta
+        </a>
+      </div>
+
+      <div class="subtitle">
+        Create a private room for a dispute, or join an existing one using its case code.
+      </div>
+
+      <div class="layout">
+        <!-- Left: Create Room -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Create a new room</div>
+            <div class="panel-hint">For a new case or mediation</div>
+          </div>
+
+          <p class="input-help">
+            We’ll generate a unique Axio room code that you can share with the other party.
+          </p>
+
+          <button type="button" id="create-room-btn">
+            <span>Generate room &amp; enter chat</span>
+          </button>
+
+          <div id="created-code" class="generated-code" style="display:none;">
+            Room created: <strong id="created-code-text"></strong><br>
+            Share this code with the other party so they can join.
+          </div>
+
+          <div class="small-note">
+            You’ll be redirected to <code>chat.html</code> with this room ID attached.
+          </div>
+        </div>
+
+        <!-- Right: Join Room -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Join an existing room</div>
+            <div class="panel-hint">Use the code you received</div>
+          </div>
+
+          <label for="room-input">Room code</label>
+          <div class="input-help">
+            Example: <code>AXIO-48291</code>. Enter the exact code shared with you.
+          </div>
+          <input id="room-input" type="text" placeholder="Enter room code">
+
+          <button type="button" id="join-room-btn">
+            <span>Join room</span>
+          </button>
+
+          <div class="small-note">
+            If you’re not sure which code to use, ask the person who created the case.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function generateRoomId() {
+      const random = Math.floor(Math.random() * 90000) + 10000;
+      return "AXIO-" + random;
+    }
+
+    const createBtn = document.getElementById('create-room-btn');
+    const createdCodeBox = document.getElementById('created-code');
+    const createdCodeText = document.getElementById('created-code-text');
+    const joinBtn = document.getElementById('join-room-btn');
+    const roomInput = document.getElementById('room-input');
+
+    createBtn.addEventListener('click', () => {
+      const roomId = generateRoomId();
+      // Show it for a moment (in case they want to copy), then redirect
+      createdCodeText.textContent = roomId;
+      createdCodeBox.style.display = 'block';
+      // Short delay, then go to chat
+      setTimeout(() => {
+        window.location.href = "chat.html?room=" + encodeURIComponent(roomId);
+      }, 600);
+    });
+
+    joinBtn.addEventListener('click', () => {
+      const roomId = roomInput.value.trim();
+      if (!roomId) {
+        alert("Please enter a room code.");
+        return;
+      }
+      window.location.href = "chat.html?room=" + encodeURIComponent(roomId);
+    });
+  </script>
+</body>
+</html>
