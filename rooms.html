@@ -334,7 +334,7 @@
 
           <label for="room-input">Room code</label>
           <div class="input-help">
-            Example: <code>AXIO-48291</code>. Enter the exact code shared with you.
+            Example: <code>48291</code>. Enter the exact code shared with you.
           </div>
           <input id="room-input" type="text" placeholder="Enter room code">
 
@@ -353,7 +353,7 @@
   <script>
     function generateRoomId() {
       const random = Math.floor(Math.random() * 90000) + 10000;
-      return "AXIO-" + random;
+      return random;
     }
 
     const createBtn = document.getElementById('create-room-btn');
