@@ -2,3 +2,7 @@
 node_modules/
 uploads/
 notes.txt
+.DS_Store
+
+# Keep local_doc directory local (never commit)
+../local_doc/
