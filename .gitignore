@@ -1,8 +1,9 @@
+__pycache__/
+*.pyc
 .env
-node_modules/
-uploads/
-notes.txt
+backend/storage/
+backend/.venv/
 .DS_Store
-
-# Keep local_doc directory local (never commit)
-../local_doc/
+node_modules/
+.next/
+frontend/.next/
