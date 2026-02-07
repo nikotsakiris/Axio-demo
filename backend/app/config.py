@@ -7,11 +7,11 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4.1-mini"
 
     qdrant_url: str = "http://localhost:6333"
-    qdrant_collection: str = "axio_chunks"
+    qdrant_collection: str = "axios_chunks"
 
     cohere_api_key: str = ""
 
-    database_url: str = "postgresql://axio:axio@localhost:5432/axio"
+    database_url: str = "postgresql://axios:axios@localhost:5432/axios"
 
     upload_dir: str = "storage"
 

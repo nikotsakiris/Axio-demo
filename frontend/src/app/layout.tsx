@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Axio",
+  title: "Axios",
   description: "Evidence-Grounded Mediator Assistant",
 };
 
@@ -31,7 +31,7 @@ export default function RootLayout({
         <nav className="sticky top-0 z-50 border-b border-card-border bg-background/80 backdrop-blur-md">
           <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
             <Link href="/" className="text-lg font-semibold tracking-tight">
-              Axio
+              Axios
             </Link>
             <div className="flex items-center gap-6 text-sm text-muted">
               <Link href="/intake" className="hover:text-foreground">

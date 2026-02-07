@@ -1,0 +1,9 @@
+# Python cache (exists)
+__pycache__/
+*.pyc
+
+# Ruff cache (exists)
+.ruff_cache/
+
+# Environment (exists)
+.env

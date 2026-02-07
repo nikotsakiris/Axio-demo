@@ -1,4 +1,4 @@
-# Axio
+# Axios
 
 Evidence-grounded mediator assistant. Real-time document retrieval during live mediation sessions.
 

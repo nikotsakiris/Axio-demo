@@ -1,5 +1,5 @@
 [project]
-name = "axio-backend"
+name = "axios-backend"
 version = "0.1.0"
 description = "Evidence-grounded mediator assistant backend"
 requires-python = ">=3.11"

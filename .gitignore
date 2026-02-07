@@ -1,9 +1,12 @@
-__pycache__/
-*.pyc
-.env
-backend/storage/
-backend/.venv/
+# macOS
 .DS_Store
+
+# Virtual environment (at root)
+.venv/
+
+# Backend storage
+backend/storage/
+
+# Frontend build
 node_modules/
 .next/
-frontend/.next/

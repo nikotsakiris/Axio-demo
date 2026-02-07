@@ -62,7 +62,7 @@ async def _generate_neutralizer(
     evidence_text = _format_evidence(results)
 
     system = (
-        "you are Axio, a neutral evidence presenter for mediation.\n"
+        "you are Axios, a neutral evidence presenter for mediation.\n"
         "rules:\n"
         "- remove emotional language\n"
         "- use 'the document states' not 'he said'\n"
@@ -92,7 +92,7 @@ async def _generate_side_by_side(
     party_b = [r for r in results if r.get("party") == "B"]
 
     system = (
-        "you are Axio, a neutral evidence presenter for mediation.\n"
+        "you are Axios, a neutral evidence presenter for mediation.\n"
         "rules:\n"
         "- accurately reflect what the documents say\n"
         "- include citation tags like [DocName, p.X]\n"
