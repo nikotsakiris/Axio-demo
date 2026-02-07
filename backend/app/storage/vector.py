@@ -14,6 +14,7 @@ from qdrant_client.models import (
     FieldCondition,
     MatchValue,
     Prefetch,
+    FusionQuery,
     Fusion,
 )
 
@@ -136,7 +137,7 @@ async def hybrid_search(
                 filter=case_filter,
             ),
         ],
-        query=Fusion.RRF,
+        query=FusionQuery(fusion=Fusion.RRF),
         limit=top_k,
         with_payload=True,
     )
