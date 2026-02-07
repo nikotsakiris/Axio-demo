@@ -4,9 +4,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: axios
-      POSTGRES_PASSWORD: axios
-      POSTGRES_DB: axios
+      POSTGRES_USER: axio
+      POSTGRES_PASSWORD: axio
+      POSTGRES_DB: axio
     volumes:
       - pgdata:/var/lib/postgresql/data
 

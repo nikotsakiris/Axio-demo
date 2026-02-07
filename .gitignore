@@ -1,12 +1,9 @@
 # macOS
 .DS_Store
 
-# Virtual environment (at root)
+# Project-wide
 .venv/
-
-# Backend storage
 backend/storage/
 
-# Frontend build
-node_modules/
-.next/
+# Keep local_doc outside repo
+../local_doc/

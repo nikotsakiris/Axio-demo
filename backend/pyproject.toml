@@ -1,5 +1,5 @@
 [project]
-name = "axios-backend"
+name = "axio-backend"
 version = "0.1.0"
 description = "Evidence-grounded mediator assistant backend"
 requires-python = ">=3.11"
@@ -15,11 +15,15 @@ dependencies = [
     "httpx",
 ]
 
+[project.scripts]
+dev = "uvicorn app.main:app --reload"
+
 [project.optional-dependencies]
 dev = [
     "pytest",
     "pytest-asyncio",
     "ruff",
+    "reportlab",
 ]
 
 [tool.ruff]

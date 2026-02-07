@@ -4,17 +4,17 @@ Evidence-grounded mediator assistant. Real-time document retrieval during live m
 
 ## Quick Start
 
-### 1. Infrastructure
+### 1. Infrastructure (Postgres, Qdrant)
 
 ```bash
-docker compose up -d   # postgres + qdrant
+docker-compose up -d
 ```
 
 ### 2. Backend
 
 ```bash
 cd backend
-cp .env.example .env   # fill in OPENAI_API_KEY and COHERE_API_KEY
+cp .env.example .env
 uv sync
 uv run uvicorn app.main:app --reload --port 8000
 ```
@@ -24,7 +24,7 @@ uv run uvicorn app.main:app --reload --port 8000
 ```bash
 cd frontend
 npm install
-npm run dev            # http://localhost:3000
+npm run dev
 ```
 
 ## Architecture
