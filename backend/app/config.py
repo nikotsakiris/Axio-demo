@@ -7,11 +7,11 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4.1-mini"
 
     qdrant_url: str = "http://localhost:6333"
-    qdrant_collection: str = "axios_chunks"
+    qdrant_collection: str = "axio_chunks"
 
     cohere_api_key: str = ""
 
-    database_url: str = "postgresql://axios:axios@localhost:5432/axios"
+    database_url: str = "postgresql://axio:axio@localhost:5432/axio"
 
     upload_dir: str = "storage"
 
@@ -22,8 +22,7 @@ class Settings(BaseSettings):
     rerank_top_k: int = 5
     similarity_threshold: float = 0.7
 
-    transcript_buffer_turns: int = 10
-    transcript_query_turns: int = 5
+    transcript_turns: int = 10
 
     @property
     def chunk_size_chars(self) -> int:

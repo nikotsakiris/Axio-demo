@@ -5,21 +5,16 @@ from app.models.case import Session
 from app.models.challenge import ChallengeResponse, Citation
 from app.services.llm import chat, embed_query
 from app.services.reranker import rerank
-from app.services.transcript import get_query_turns, get_recent_turns, format_turns_for_query
+from app.services.transcript import get_turns, format_turns
 from app.storage.vector import hybrid_search
 
 
 async def run_challenge(session: Session) -> ChallengeResponse:
-    buffer_turns = get_recent_turns(session.id)
-    if not buffer_turns:
+    turns = get_turns(session.id)
+    if not turns:
         raise ValueError("no transcript data available")
 
-    # query = last N turns (subset of buffer), embedded directly as search query
-    query_turns = get_query_turns(session.id)
-    query_text = format_turns_for_query(query_turns)
-
-    # full buffer for generation context
-    full_context = format_turns_for_query(buffer_turns)
+    query_text = format_turns(turns)
 
     # step 1: embed transcript text directly (no LLM query generation)
     query_embedding = await embed_query(query_text)
@@ -50,19 +45,19 @@ async def run_challenge(session: Session) -> ChallengeResponse:
 
     # step 5: generate response with fixed prompt template
     if session.treatment.value == "neutralizer":
-        return await _generate_neutralizer(query_text, full_context, top_results, session)
+        return await _generate_neutralizer(query_text, top_results, session)
     else:
-        return await _generate_side_by_side(query_text, full_context, top_results, session)
+        return await _generate_side_by_side(query_text, top_results, session)
 
 
 async def _generate_neutralizer(
-    query_text: str, transcript_context: str, results: list[dict], session: Session,
+    query_text: str, results: list[dict], session: Session,
 ) -> ChallengeResponse:
     citations = _build_citations(results)
     evidence_text = _format_evidence(results)
 
     system = (
-        "you are Axios, a neutral evidence presenter for mediation.\n"
+        "you are Axio, a neutral evidence presenter for mediation.\n"
         "rules:\n"
         "- remove emotional language\n"
         "- use 'the document states' not 'he said'\n"
@@ -72,7 +67,7 @@ async def _generate_neutralizer(
         "- do not give legal advice"
     )
     user = (
-        f"Current discussion:\n{transcript_context}\n\n"
+        f"Current discussion:\n{query_text}\n\n"
         f"Retrieved evidence:\n{evidence_text}"
     )
     summary = await chat(system, user)
@@ -86,13 +81,13 @@ async def _generate_neutralizer(
 
 
 async def _generate_side_by_side(
-    query_text: str, transcript_context: str, results: list[dict], session: Session,
+    query_text: str, results: list[dict], session: Session,
 ) -> ChallengeResponse:
     party_a = [r for r in results if r.get("party") == "A"]
     party_b = [r for r in results if r.get("party") == "B"]
 
     system = (
-        "you are Axios, a neutral evidence presenter for mediation.\n"
+        "you are Axio, a neutral evidence presenter for mediation.\n"
         "rules:\n"
         "- accurately reflect what the documents say\n"
         "- include citation tags like [DocName, p.X]\n"
@@ -108,7 +103,7 @@ async def _generate_side_by_side(
             return "no relevant evidence from Party A documents."
         return await chat(
             system,
-            f"Current discussion:\n{transcript_context}\n\nParty A documents:\n{a_text}",
+            f"Current discussion:\n{query_text}\n\nParty A documents:\n{a_text}",
         )
 
     async def gen_b():
@@ -116,7 +111,7 @@ async def _generate_side_by_side(
             return "no relevant evidence from Party B documents."
         return await chat(
             system,
-            f"Current discussion:\n{transcript_context}\n\nParty B documents:\n{b_text}",
+            f"Current discussion:\n{query_text}\n\nParty B documents:\n{b_text}",
         )
 
     party_a_summary, party_b_summary = await asyncio.gather(gen_a(), gen_b())

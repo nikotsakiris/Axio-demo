@@ -2,7 +2,7 @@ import json
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from app.services.transcript import add_turn, get_recent_turns
+from app.services.transcript import add_turn, get_turns
 
 router = APIRouter()
 
@@ -26,7 +26,7 @@ async def transcript_ws(ws: WebSocket, session_id: str):
                 continue
 
             add_turn(session_id, speaker, text)
-            turns = get_recent_turns(session_id)
+            turns = get_turns(session_id)
 
             await ws.send_json({
                 "ok": True,
