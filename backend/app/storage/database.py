@@ -12,6 +12,10 @@ async def init_db():
     _pool = await asyncpg.create_pool(settings.database_url)
     async with _pool.acquire() as conn:
         await conn.execute(SCHEMA)
+        # migration: add title column if table predates this field
+        await conn.execute(
+            "ALTER TABLE documents ADD COLUMN IF NOT EXISTS title TEXT NOT NULL DEFAULT ''"
+        )
 
 
 async def close_db():
@@ -47,6 +51,7 @@ CREATE TABLE IF NOT EXISTS documents (
     case_id TEXT NOT NULL REFERENCES cases(id),
     party TEXT NOT NULL,
     filename TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
     page_count INTEGER NOT NULL DEFAULT 0,
     storage_path TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -65,6 +70,17 @@ CREATE TABLE IF NOT EXISTS chunks (
     parent_text TEXT,
     section_title TEXT
 );
+
+CREATE TABLE IF NOT EXISTS transcript_turns (
+    id SERIAL PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    speaker TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_transcript_session
+    ON transcript_turns (session_id, created_at);
 """
 
 
@@ -121,9 +137,9 @@ async def get_sessions_for_case(case_id: str) -> list[Session]:
 async def save_document(doc: Document):
     pool = _get_pool()
     await pool.execute(
-        "INSERT INTO documents (id, case_id, party, filename, page_count, storage_path, created_at) "
-        "VALUES ($1, $2, $3, $4, $5, $6, $7)",
-        doc.id, doc.case_id, doc.party, doc.filename, doc.page_count, doc.storage_path, doc.created_at,
+        "INSERT INTO documents (id, case_id, party, filename, title, page_count, storage_path, created_at) "
+        "VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+        doc.id, doc.case_id, doc.party, doc.filename, doc.title, doc.page_count, doc.storage_path, doc.created_at,
     )
 
 
@@ -134,7 +150,8 @@ async def get_document(doc_id: str) -> Document | None:
         return None
     return Document(
         id=row["id"], case_id=row["case_id"], party=row["party"], filename=row["filename"],
-        page_count=row["page_count"], storage_path=row["storage_path"], created_at=row["created_at"],
+        title=row["title"], page_count=row["page_count"], storage_path=row["storage_path"],
+        created_at=row["created_at"],
     )
 
 
@@ -144,7 +161,8 @@ async def get_documents_for_case(case_id: str) -> list[Document]:
     return [
         Document(
             id=r["id"], case_id=r["case_id"], party=r["party"], filename=r["filename"],
-            page_count=r["page_count"], storage_path=r["storage_path"], created_at=r["created_at"],
+            title=r["title"], page_count=r["page_count"], storage_path=r["storage_path"],
+            created_at=r["created_at"],
         )
         for r in rows
     ]
@@ -176,4 +194,33 @@ async def get_chunk(chunk_id: str) -> Chunk | None:
         filename=row["filename"], page=row["page"], start_char=row["start_char"],
         end_char=row["end_char"], text=row["text"], parent_text=row["parent_text"],
         section_title=row["section_title"],
+    )
+
+
+# --- transcript turns ---
+
+async def save_transcript_turn(session_id: str, speaker: str, text: str):
+    pool = _get_pool()
+    await pool.execute(
+        "INSERT INTO transcript_turns (session_id, speaker, text) VALUES ($1, $2, $3)",
+        session_id, speaker, text,
+    )
+
+
+async def get_transcript_turns(session_id: str, limit: int = 100) -> list[dict]:
+    pool = _get_pool()
+    rows = await pool.fetch(
+        "SELECT speaker, text, created_at FROM ("
+        "  SELECT speaker, text, created_at FROM transcript_turns "
+        "  WHERE session_id = $1 ORDER BY created_at DESC LIMIT $2"
+        ") sub ORDER BY created_at ASC",
+        session_id, limit,
+    )
+    return [dict(r) for r in rows]
+
+
+async def clear_transcript_turns(session_id: str):
+    pool = _get_pool()
+    await pool.execute(
+        "DELETE FROM transcript_turns WHERE session_id = $1", session_id,
     )

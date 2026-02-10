@@ -25,8 +25,8 @@ async def transcript_ws(ws: WebSocket, session_id: str):
                 await ws.send_json({"error": "empty text"})
                 continue
 
-            add_turn(session_id, speaker, text)
-            turns = get_turns(session_id)
+            await add_turn(session_id, speaker, text)
+            turns = await get_turns(session_id)
 
             await ws.send_json({
                 "ok": True,

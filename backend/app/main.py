@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Axios",
+    title="Axio",
     description="evidence-grounded mediator assistant",
     lifespan=lifespan,
 )
