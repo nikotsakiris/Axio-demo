@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
 import {
   Zap,
@@ -11,6 +11,7 @@ import {
   Copy,
   Check,
   X,
+  ChevronRight,
 } from "lucide-react";
 import {
   getSession,
@@ -39,7 +40,7 @@ export default function DashboardPage() {
   const [speaker, setSpeaker] = useState("Party A");
   const [inputText, setInputText] = useState("");
 
-  // evidence viewer modal
+  // evidence panel
   const [viewingCitation, setViewingCitation] = useState<Citation | null>(null);
   const [chunkDetail, setChunkDetail] = useState<{
     text: string;
@@ -50,33 +51,23 @@ export default function DashboardPage() {
   const wsRef = useRef<WebSocket | null>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
-  // load session
   useEffect(() => {
     getSession(sessionId).then(setSession).catch((e) => setError(String(e)));
   }, [sessionId]);
 
-  // connect websocket
   useEffect(() => {
     const ws = connectTranscriptWs(sessionId);
     wsRef.current = ws;
-
     ws.onopen = () => setWsConnected(true);
     ws.onclose = () => setWsConnected(false);
     ws.onerror = () => setWsConnected(false);
-
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      if (data.turns) {
-        setTurns(data.turns);
-      }
+      if (data.turns) setTurns(data.turns);
     };
-
-    return () => {
-      ws.close();
-    };
+    return () => ws.close();
   }, [sessionId]);
 
-  // auto-scroll transcript
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [turns]);
@@ -127,10 +118,7 @@ export default function DashboardPage() {
             <p className="text-xs text-muted">
               session {sessionId}
               {session && (
-                <span>
-                  {" "}
-                  &middot; {session.treatment} treatment
-                </span>
+                <span> &middot; {session.treatment} treatment</span>
               )}
             </p>
           </div>
@@ -147,7 +135,8 @@ export default function DashboardPage() {
         </div>
 
         {/* transcript feed */}
-        <div className="flex-1 overflow-y-auto rounded-xl border border-card-border bg-card p-4"
+        <div
+          className="flex-1 overflow-y-auto rounded-xl border border-card-border bg-card p-4"
           style={{ maxHeight: "60vh" }}
         >
           {turns.length === 0 ? (
@@ -160,12 +149,18 @@ export default function DashboardPage() {
                 <div key={i} className="flex gap-3">
                   <div
                     className={`mt-0.5 h-6 w-6 flex-shrink-0 rounded-full text-center text-xs font-bold leading-6 ${
-                      t.speaker.includes("A")
-                        ? "bg-accent/20 text-accent"
-                        : "bg-warning/20 text-warning"
+                      t.speaker.includes("Mediator")
+                        ? "bg-foreground/10 text-foreground"
+                        : t.speaker.includes("A")
+                          ? "bg-accent/20 text-accent"
+                          : "bg-warning/20 text-warning"
                     }`}
                   >
-                    {t.speaker.includes("A") ? "A" : "B"}
+                    {t.speaker.includes("Mediator")
+                      ? "M"
+                      : t.speaker.includes("A")
+                        ? "A"
+                        : "B"}
                   </div>
                   <div className="flex-1">
                     <p className="mb-0.5 text-xs font-medium text-muted">
@@ -202,7 +197,7 @@ export default function DashboardPage() {
           <button
             onClick={sendTurn}
             disabled={!inputText.trim()}
-            className="rounded-lg bg-card border border-card-border px-3 py-2 text-muted hover:text-foreground disabled:opacity-40"
+            className="rounded-lg border border-card-border bg-card px-3 py-2 text-muted hover:text-foreground disabled:opacity-40"
           >
             <Send className="h-4 w-4" />
           </button>
@@ -211,7 +206,6 @@ export default function DashboardPage() {
 
       {/* right: challenge panel */}
       <div className="w-full lg:w-96">
-        {/* challenge button */}
         <button
           onClick={handleChallenge}
           disabled={challenging || turns.length === 0}
@@ -231,7 +225,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* challenge result */}
         {challenge && (
           <div className="rounded-xl border border-card-border bg-card">
             <div className="flex items-center justify-between border-b border-card-border px-4 py-3">
@@ -277,9 +270,9 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* evidence viewer modal */}
+      {/* evidence side panel */}
       {viewingCitation && (
-        <EvidenceModal
+        <EvidencePanel
           citation={viewingCitation}
           detail={chunkDetail}
           onClose={() => {
@@ -289,6 +282,63 @@ export default function DashboardPage() {
         />
       )}
     </div>
+  );
+}
+
+// --- inline citation parser ---
+
+function ParsedSummary({
+  text,
+  citations,
+  onCitationClick,
+}: {
+  text: string;
+  citations: Citation[];
+  onCitationClick: (c: Citation) => void;
+}) {
+  const parts = useMemo(() => {
+    const regex = /\[([^\],]+),\s*p\.(\d+)\]/g;
+    const result: Array<
+      | { type: "text"; content: string }
+      | { type: "cite"; content: string; citation: Citation | null }
+    > = [];
+    let lastIndex = 0;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        result.push({ type: "text", content: text.slice(lastIndex, match.index) });
+      }
+      const docName = match[1].trim();
+      const page = parseInt(match[2]);
+      const cit =
+        citations.find((c) => c.doc_name === docName && c.page === page) || null;
+      result.push({ type: "cite", content: match[0], citation: cit });
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < text.length) {
+      result.push({ type: "text", content: text.slice(lastIndex) });
+    }
+    return result;
+  }, [text, citations]);
+
+  return (
+    <span className="whitespace-pre-wrap text-sm leading-relaxed">
+      {parts.map((part, i) =>
+        part.type === "text" ? (
+          <span key={i}>{part.content}</span>
+        ) : (
+          <button
+            key={i}
+            onClick={() => part.citation && onCitationClick(part.citation)}
+            className="mx-0.5 inline-flex items-center gap-0.5 rounded border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-xs font-medium text-accent hover:bg-accent/20"
+            title={part.citation ? `View source` : undefined}
+          >
+            <FileText className="h-3 w-3" />
+            {part.content.slice(1, -1)}
+          </button>
+        ),
+      )}
+    </span>
   );
 }
 
@@ -314,14 +364,23 @@ function NeutralizerView({
   return (
     <div>
       <div className="relative mb-4">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed">{summary}</p>
+        <ParsedSummary
+          text={summary}
+          citations={citations}
+          onCitationClick={onCitationClick}
+        />
         <button
           onClick={handleCopy}
           className="absolute right-0 top-0 rounded-md p-1 text-muted hover:text-foreground"
         >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? (
+            <Check className="h-3.5 w-3.5" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
         </button>
       </div>
+      {/* citation pills as secondary overview */}
       <CitationList citations={citations} onClick={onCitationClick} />
     </div>
   );
@@ -341,20 +400,30 @@ function SideBySideView({
   onCitationClick: (c: Citation) => void;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div>
-        <p className="mb-2 text-xs font-semibold text-accent">Party A</p>
-        <p className="mb-3 whitespace-pre-wrap text-sm leading-relaxed">
-          {partyA}
-        </p>
-        <CitationList citations={partyACitations} onClick={onCitationClick} />
+    <div className="space-y-4">
+      <div className="rounded-lg border border-accent/20 bg-accent/5 p-4">
+        <p className="mb-2 text-xs font-semibold text-accent">Party A Evidence</p>
+        <ParsedSummary
+          text={partyA}
+          citations={partyACitations}
+          onCitationClick={onCitationClick}
+        />
+        <div className="mt-3">
+          <CitationList citations={partyACitations} onClick={onCitationClick} />
+        </div>
       </div>
-      <div>
-        <p className="mb-2 text-xs font-semibold text-warning">Party B</p>
-        <p className="mb-3 whitespace-pre-wrap text-sm leading-relaxed">
-          {partyB}
+      <div className="rounded-lg border border-warning/20 bg-warning/5 p-4">
+        <p className="mb-2 text-xs font-semibold text-warning">
+          Party B Evidence
         </p>
-        <CitationList citations={partyBCitations} onClick={onCitationClick} />
+        <ParsedSummary
+          text={partyB}
+          citations={partyBCitations}
+          onCitationClick={onCitationClick}
+        />
+        <div className="mt-3">
+          <CitationList citations={partyBCitations} onClick={onCitationClick} />
+        </div>
       </div>
     </div>
   );
@@ -374,9 +443,9 @@ function CitationList({
         <button
           key={i}
           onClick={() => onClick(c)}
-          className="inline-flex items-center gap-1 rounded-md border border-card-border bg-background px-2 py-1 text-xs text-muted hover:text-foreground hover:border-accent"
+          className="inline-flex items-center gap-1 rounded-md border border-card-border bg-background px-2 py-1 text-xs text-muted hover:border-accent hover:text-foreground"
         >
-          <FileText className="h-3 w-3" />
+          <ChevronRight className="h-3 w-3" />
           {c.doc_name}, p.{c.page}
         </button>
       ))}
@@ -384,7 +453,9 @@ function CitationList({
   );
 }
 
-function EvidenceModal({
+// --- evidence side panel ---
+
+function EvidencePanel({
   citation,
   detail,
   onClose,
@@ -393,60 +464,125 @@ function EvidenceModal({
   detail: { text: string; parent_text: string; section_title: string } | null;
   onClose: () => void;
 }) {
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="mx-4 w-full max-w-xl rounded-xl border border-card-border bg-card shadow-2xl">
-        <div className="flex items-center justify-between border-b border-card-border px-5 py-4">
-          <div>
-            <p className="text-sm font-semibold">
-              {citation.doc_name}, page {citation.page}
-            </p>
-            <p className="text-xs text-muted">{citation.chunk_id}</p>
+    <>
+      {/* backdrop */}
+      <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} />
+
+      {/* panel */}
+      <div className="fixed right-0 top-0 z-50 flex h-full w-full max-w-lg flex-col border-l border-card-border bg-card shadow-2xl animate-slide-in">
+        {/* header */}
+        <div className="flex-shrink-0 border-b border-card-border px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">
+                {citation.doc_name}
+              </p>
+              <p className="text-xs text-muted">Page {citation.page}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="ml-4 rounded-md p-1.5 text-muted hover:bg-card-border/50 hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1 text-muted hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
-        <div className="max-h-[60vh] overflow-y-auto p-5">
+
+        {/* content */}
+        <div className="flex-1 overflow-y-auto p-6">
           {detail ? (
-            <>
+            <div className="space-y-6">
               {detail.section_title && (
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">
-                  {detail.section_title}
-                </p>
+                <div className="flex items-center gap-2">
+                  <div className="h-px flex-1 bg-card-border" />
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted">
+                    {detail.section_title}
+                  </span>
+                  <div className="h-px flex-1 bg-card-border" />
+                </div>
               )}
-              <div className="mb-4 rounded-lg border border-accent/30 bg-accent/5 p-4">
-                <p className="mb-1 text-xs font-semibold text-accent">
-                  Matched Chunk
+
+              {/* matched chunk */}
+              <div className="rounded-lg border-l-4 border-accent bg-accent/5 p-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-accent">
+                  Matched Evidence
                 </p>
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">
                   {detail.text}
                 </p>
               </div>
+
+              {/* surrounding context with highlight */}
               {detail.parent_text && detail.parent_text !== detail.text && (
                 <div>
-                  <p className="mb-1 text-xs font-semibold text-muted">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
                     Surrounding Context
                   </p>
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted">
-                    {detail.parent_text}
-                  </p>
+                  <div className="rounded-lg border border-card-border bg-background p-4">
+                    <HighlightedContext
+                      parent={detail.parent_text}
+                      matched={detail.text}
+                    />
+                  </div>
                 </div>
               )}
-            </>
+            </div>
           ) : (
-            <div>
-              <p className="mb-1 text-xs font-semibold text-muted">Snippet</p>
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+                Snippet
+              </p>
               <p className="whitespace-pre-wrap text-sm leading-relaxed">
                 {citation.snippet}
               </p>
             </div>
           )}
         </div>
+
+        {/* footer */}
+        <div className="flex-shrink-0 border-t border-card-border px-6 py-3">
+          <p className="text-xs text-muted">
+            Chunk: <code className="text-xs">{citation.chunk_id}</code>
+          </p>
+        </div>
       </div>
-    </div>
+    </>
+  );
+}
+
+function HighlightedContext({
+  parent,
+  matched,
+}: {
+  parent: string;
+  matched: string;
+}) {
+  const idx = parent.indexOf(matched);
+  if (idx === -1) {
+    return (
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted">
+        {parent}
+      </p>
+    );
+  }
+  const before = parent.slice(0, idx);
+  const after = parent.slice(idx + matched.length);
+  return (
+    <p className="whitespace-pre-wrap text-sm leading-relaxed">
+      <span className="text-muted">{before}</span>
+      <span className="rounded bg-accent/20 px-0.5 text-foreground">
+        {matched}
+      </span>
+      <span className="text-muted">{after}</span>
+    </p>
   );
 }

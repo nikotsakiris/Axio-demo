@@ -55,14 +55,14 @@ export default function IntakePage() {
     }
   }
 
-  async function handleUpload(party: string, files: FileList | null) {
+  async function handleUpload(party: string, files: FileList | null, title: string) {
     if (!files || !selectedCase) return;
     setError("");
     setSuccess("");
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
-        await uploadDocument(selectedCase.id, party, file);
+        await uploadDocument(selectedCase.id, party, file, title);
       }
       setSuccess(`uploaded ${files.length} file(s) for Party ${party}`);
       await loadDocs(selectedCase.id);
@@ -138,12 +138,12 @@ export default function IntakePage() {
             <UploadZone
               party="A"
               uploading={uploading}
-              onUpload={(files) => handleUpload("A", files)}
+              onUpload={(files, title) => handleUpload("A", files, title)}
             />
             <UploadZone
               party="B"
               uploading={uploading}
-              onUpload={(files) => handleUpload("B", files)}
+              onUpload={(files, title) => handleUpload("B", files, title)}
             />
           </div>
 
@@ -162,9 +162,11 @@ export default function IntakePage() {
                     <div className="flex items-center gap-3">
                       <FileText className="h-4 w-4 text-muted" />
                       <div>
-                        <p className="text-sm font-medium">{d.filename}</p>
+                        <p className="text-sm font-medium">
+                          {d.title || d.filename}
+                        </p>
                         <p className="text-xs text-muted">
-                          Party {d.party} &middot; {d.page_count} pages
+                          {d.title ? `${d.filename} · ` : ""}Party {d.party} &middot; {d.page_count} pages
                         </p>
                       </div>
                     </div>
@@ -187,38 +189,52 @@ function UploadZone({
 }: {
   party: string;
   uploading: boolean;
-  onUpload: (files: FileList | null) => void;
+  onUpload: (files: FileList | null, title: string) => void;
 }) {
   const [dragOver, setDragOver] = useState(false);
+  const [title, setTitle] = useState("");
 
   return (
-    <label
-      onDragOver={(e) => {
-        e.preventDefault();
-        setDragOver(true);
-      }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setDragOver(false);
-        onUpload(e.dataTransfer.files);
-      }}
-      className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center ${
-        dragOver
-          ? "border-accent bg-accent/5"
-          : "border-card-border hover:border-muted"
-      } ${uploading ? "pointer-events-none opacity-50" : ""}`}
-    >
-      <Upload className="mb-3 h-6 w-6 text-muted" />
-      <p className="mb-1 text-sm font-medium">Party {party} Documents</p>
-      <p className="text-xs text-muted">drag & drop PDFs or click to browse</p>
+    <div className="rounded-xl border border-card-border bg-card p-4">
+      <p className="mb-3 text-sm font-semibold">Party {party} Documents</p>
       <input
-        type="file"
-        accept=".pdf"
-        multiple
-        className="hidden"
-        onChange={(e) => onUpload(e.target.files)}
+        type="text"
+        placeholder="Document title (e.g. Tenant's repair log)"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="mb-3 w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted/60 focus:border-accent"
       />
-    </label>
+      <label
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          onUpload(e.dataTransfer.files, title);
+          setTitle("");
+        }}
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 text-center ${
+          dragOver
+            ? "border-accent bg-accent/5"
+            : "border-card-border hover:border-muted"
+        } ${uploading ? "pointer-events-none opacity-50" : ""}`}
+      >
+        <Upload className="mb-2 h-5 w-5 text-muted" />
+        <p className="text-xs text-muted">drag & drop PDFs or click to browse</p>
+        <input
+          type="file"
+          accept=".pdf"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            onUpload(e.target.files, title);
+            setTitle("");
+          }}
+        />
+      </label>
+    </div>
   );
 }
