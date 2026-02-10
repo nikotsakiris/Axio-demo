@@ -1,4 +1,9 @@
-.env
-node_modules/
-uploads/
-notes.txt
+# macOS
+.DS_Store
+
+# Project-wide
+.venv/
+backend/storage/
+
+# Keep local_doc outside repo
+../local_doc/
