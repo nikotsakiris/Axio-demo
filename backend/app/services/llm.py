@@ -32,6 +32,30 @@ async def embed_query(text: str) -> list[float]:
     return result[0]
 
 
+async def contextualize_chunk(document_text: str, chunk_text: str) -> str:
+    """generate chunk-specific context using full document (Anthropic Contextual Retrieval)"""
+    client = _get_client()
+    resp = await client.chat.completions.create(
+        model=settings.llm_model,
+        messages=[
+            {"role": "user", "content": (
+                f"<document>\n{document_text}\n</document>\n"
+                "Here is the chunk we want to situate within the whole document:\n"
+                f"<chunk>\n{chunk_text}\n</chunk>\n"
+                "Please give a short succinct context to situate this chunk within "
+                "the overall document for the purposes of improving search retrieval "
+                "of the chunk. Answer only with the succinct context and nothing else."
+            )},
+        ],
+        temperature=0.0,
+        max_tokens=200,
+    )
+    content = resp.choices[0].message.content
+    if content is None:
+        raise RuntimeError("LLM returned empty context")
+    return content.strip()
+
+
 async def chat(system: str, user: str) -> str:
     client = _get_client()
     resp = await client.chat.completions.create(

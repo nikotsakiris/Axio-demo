@@ -76,14 +76,20 @@ async def init_qdrant():
         )
 
 
-async def upsert_chunks(chunks: list[Chunk], embeddings: list[list[float]]):
+async def upsert_chunks(
+    chunks: list[Chunk],
+    embeddings: list[list[float]],
+    enriched_texts: list[str] | None = None,
+):
     if not chunks:
         return
     client = await _get_client()
     points = []
-    for chunk, emb in zip(chunks, embeddings):
+    for i, (chunk, emb) in enumerate(zip(chunks, embeddings)):
         point_id = _chunk_id_to_point_id(chunk.id)
-        sparse = sparse_encode(chunk.text)
+        # use enriched text for BM25 so keyword search sees document metadata
+        index_text = enriched_texts[i] if enriched_texts else chunk.text
+        sparse = sparse_encode(index_text)
         points.append(PointStruct(
             id=point_id,
             vector={"dense": emb, "bm25": sparse},
@@ -97,6 +103,7 @@ async def upsert_chunks(chunks: list[Chunk], embeddings: list[list[float]]):
                 "start_char": chunk.start_char,
                 "end_char": chunk.end_char,
                 "text": chunk.text,
+                "enriched_text": index_text,
                 "parent_text": chunk.parent_text,
                 "section_title": chunk.section_title,
             },
