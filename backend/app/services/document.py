@@ -1,20 +1,28 @@
+import asyncio
 import os
-import tempfile
 import uuid
+from io import BytesIO
 
-import pdfplumber
+from docling.document_converter import DocumentConverter, PdfFormatOption, InputFormat
+from docling.datamodel.pipeline_options import PdfPipelineOptions, OcrMacOptions
+from docling_core.types.io import DocumentStream
 
 from app.config import settings
 from app.models.document import Document, Chunk
-from app.services.llm import embed_texts
+from app.services.llm import embed_texts, contextualize_chunk
 from app.storage.database import save_document, save_chunks
 from app.storage.vector import upsert_chunks
 
 SUPPORTED_EXTENSIONS = {".pdf"}
 
+_pdf_options = PdfPipelineOptions(do_ocr=True, ocr_options=OcrMacOptions())
+_converter = DocumentConverter(
+    format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=_pdf_options)}
+)
+
 
 async def ingest_document(
-    case_id: str, party: str, filename: str, content: bytes,
+    case_id: str, party: str, filename: str, content: bytes, title: str = "",
 ) -> Document:
     ext = os.path.splitext(filename)[1].lower()
     if ext not in SUPPORTED_EXTENSIONS:
@@ -41,6 +49,7 @@ async def ingest_document(
         case_id=case_id,
         party=party,
         filename=filename,
+        title=title,
         page_count=page_count,
         storage_path=storage_path,
     )
@@ -50,31 +59,50 @@ async def ingest_document(
     if not chunks:
         raise ValueError(f"no chunks produced from {filename}")
 
-    texts_to_embed = [c.text for c in chunks]
-    embeddings = await embed_texts(texts_to_embed)
-    await upsert_chunks(chunks, embeddings)
+    # contextual retrieval: per-chunk LLM context (Anthropic method, 49-67% fewer retrieval failures)
+    full_doc_text = "\n\n".join(text for _, text in pages_text)
+    contextualized = await _contextualize_chunks(chunks, full_doc_text, title)
+
+    embeddings = await embed_texts(contextualized)
+    await upsert_chunks(chunks, embeddings, enriched_texts=contextualized)
     await save_chunks(chunks)
     return doc
 
 
+async def _contextualize_chunks(
+    chunks: list[Chunk], full_doc_text: str, doc_title: str,
+) -> list[str]:
+    """Anthropic-style contextual retrieval: LLM generates per-chunk context
+    using the full document, then we prepend it before embedding and BM25."""
+
+    async def _ctx_one(chunk: Chunk) -> str:
+        context = await contextualize_chunk(full_doc_text, chunk.text)
+        meta_parts = []
+        if doc_title:
+            meta_parts.append(f"Document: {doc_title}")
+        meta_parts.append(f"Party {chunk.party}")
+        meta = " | ".join(meta_parts)
+        return f"[{meta}] {context}\n{chunk.text}"
+
+    return list(await asyncio.gather(*[_ctx_one(c) for c in chunks]))
+
+
 def _extract_text(content: bytes) -> tuple[list[tuple[int, str]], int]:
-    pages_text: list[tuple[int, str]] = []
-    page_count = 0
+    source = DocumentStream(name="upload.pdf", stream=BytesIO(content))
+    result = _converter.convert(source)
+    doc = result.document
+    page_count = len(result.pages)
 
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-        tmp.write(content)
-        tmp_path = tmp.name
+    page_texts: dict[int, list[str]] = {}
+    for item, _level in doc.iterate_items():
+        if not hasattr(item, "text") or not item.text or not item.text.strip():
+            continue
+        if not hasattr(item, "prov") or not item.prov:
+            continue
+        pg = item.prov[0].page_no
+        page_texts.setdefault(pg, []).append(item.text)
 
-    try:
-        with pdfplumber.open(tmp_path) as pdf:
-            page_count = len(pdf.pages)
-            for i, page in enumerate(pdf.pages):
-                text = page.extract_text() or ""
-                if text.strip():
-                    pages_text.append((i + 1, text))
-    finally:
-        os.unlink(tmp_path)
-
+    pages_text = [(p, "\n\n".join(texts)) for p, texts in sorted(page_texts.items())]
     return pages_text, page_count
 
 

@@ -19,6 +19,7 @@ export interface Document {
   case_id: string;
   party: string;
   filename: string;
+  title: string;
   page_count: number;
   storage_path: string;
   created_at: string;
@@ -105,12 +106,14 @@ export async function getSession(sessionId: string): Promise<Session> {
 export async function uploadDocument(
   caseId: string,
   party: string,
-  file: File
+  file: File,
+  title = ""
 ): Promise<Document> {
   const form = new FormData();
   form.append("case_id", caseId);
   form.append("party", party);
   form.append("file", file);
+  if (title) form.append("title", title);
   const res = await fetch(`${API}/intake/upload`, { method: "POST", body: form });
   if (!res.ok) throw new Error(await res.text());
   return res.json();

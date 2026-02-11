@@ -10,6 +10,7 @@ class Document(BaseModel):
     case_id: str
     party: str  # "A" or "B"
     filename: str
+    title: str = ""  # optional human label, e.g. "Tenant's repair log"
     page_count: int = 0
     storage_path: str = ""
     created_at: datetime = Field(default_factory=datetime.utcnow)

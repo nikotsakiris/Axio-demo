@@ -10,7 +10,7 @@ dependencies = [
     "pydantic-settings",
     "openai",
     "qdrant-client",
-    "pdfplumber",
+    "docling[ocrmac]",
     "asyncpg",
     "httpx",
 ]

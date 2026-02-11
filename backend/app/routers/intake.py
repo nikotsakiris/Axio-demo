@@ -12,6 +12,7 @@ async def upload_document(
     case_id: str = Form(...),
     party: str = Form(...),
     file: UploadFile = File(...),
+    title: str = Form(""),
 ) -> Document:
     if party not in ("A", "B"):
         raise HTTPException(400, "party must be 'A' or 'B'")
@@ -26,7 +27,10 @@ async def upload_document(
     if not content:
         raise HTTPException(400, "empty file")
 
-    doc = await ingest_document(case_id, party, file.filename, content)
+    try:
+        doc = await ingest_document(case_id, party, file.filename, content, title=title)
+    except ValueError as e:
+        raise HTTPException(422, detail=str(e))
     return doc
 
 

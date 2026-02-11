@@ -10,7 +10,7 @@ from app.storage.vector import hybrid_search
 
 
 async def run_challenge(session: Session) -> ChallengeResponse:
-    turns = get_turns(session.id)
+    turns = await get_turns(session.id)
     if not turns:
         raise ValueError("no transcript data available")
 

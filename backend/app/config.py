@@ -2,26 +2,22 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # secrets / infrastructure (set in .env)
     openai_api_key: str = ""
+    cohere_api_key: str = ""
+    database_url: str = "postgresql://axio:axio@localhost:5432/axio"
+    qdrant_url: str = "http://localhost:6333"
+
+    # tunable parameters (single source of truth — change here, not in .env)
+    qdrant_collection: str = "axio_chunks"
     embedding_model: str = "text-embedding-3-small"
     llm_model: str = "gpt-4.1-mini"
-
-    qdrant_url: str = "http://localhost:6333"
-    qdrant_collection: str = "axio_chunks"
-
-    cohere_api_key: str = ""
-
-    database_url: str = "postgresql://axio:axio@localhost:5432/axio"
-
     upload_dir: str = "storage"
-
-    chunk_size_tokens: int = 300
-    chunk_overlap_pct: float = 0.15
-
     retrieval_top_k: int = 20
     rerank_top_k: int = 5
-    similarity_threshold: float = 0.7
-
+    similarity_threshold: float = 0.4
+    chunk_size_tokens: int = 300
+    chunk_overlap_pct: float = 0.15
     transcript_turns: int = 10
 
     @property

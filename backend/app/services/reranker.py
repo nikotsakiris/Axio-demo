@@ -11,7 +11,8 @@ async def rerank(query: str, results: list[dict], top_k: int | None = None) -> l
 
 
 async def _cohere_rerank(query: str, results: list[dict], top_k: int) -> list[dict]:
-    documents = [r.get("text", "") for r in results]
+    # prefer enriched_text so cross-encoder sees document metadata
+    documents = [r.get("enriched_text") or r.get("text", "") for r in results]
     if not documents:
         return []
 
